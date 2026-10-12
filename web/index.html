@@ -4,24 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1F6B47">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rasoi">
 <title>Rasoi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,750&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
-/* Layout: phone = one column; tablet/desktop (>=900px) = kitchen panel left, suggestion right.
-   Coriander green leads; haldi marks favourites. */
+/* Layout: phone = content + bottom tab bar; tablet (>=768) = icon rail on the left; desktop (>=1100) = labelled sidebar.
+   Coriander green leads; haldi marks saved things. */
 :root{
-  --bg:#F3F5F1; --surface:#FFFFFF; --sunk:#E9EEE6; --ink:#16201A; --ink-2:#4B5A51; --ink-3:#77857C;
-  --line:#DCE3D9; --line-strong:#B2BFB4;
+  --bg:#F3F5F1; --surface:#FFFFFF; --sunk:#EAEFE7; --ink:#15201A; --ink-2:#4A5950; --ink-3:#76847B;
+  --line:#DDE4DA; --line-strong:#B3C0B5;
   --leaf:#1F6B47; --leaf-ink:#165A3A; --leaf-soft:#E0EFE6; --on-leaf:#FFFFFF;
   --haldi:#E2A21B; --haldi-soft:#FBF0D5; --haldi-ink:#845600;
   --danger:#B23A2E; --danger-soft:#F8E3E0;
-  --shadow:0 1px 2px rgba(22,32,26,.06), 0 8px 24px rgba(22,32,26,.06);
-  --shadow-lg:0 -8px 40px rgba(22,32,26,.18);
+  --shadow:0 1px 2px rgba(21,32,26,.05), 0 6px 20px rgba(21,32,26,.06);
+  --shadow-lg:0 -10px 40px rgba(21,32,26,.18);
   --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
-  --r:16px; --r-sm:11px;
+  --r:18px; --nav-h:64px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F1411; --surface:#171E1A; --sunk:#202923; --ink:#E6ECE7; --ink-2:#A9B6AE; --ink-3:#7E8C84;
@@ -29,247 +31,278 @@
   --leaf:#4CBF86; --leaf-ink:#7AD6A6; --leaf-soft:#163426; --on-leaf:#0A1A11;
   --haldi:#EDB443; --haldi-soft:#2F2611; --haldi-ink:#F2C46A;
   --danger:#F08A7E; --danger-soft:#3A1D19;
-  --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 -8px 40px rgba(0,0,0,.5); color-scheme:dark;}}
+  --shadow:0 1px 2px rgba(0,0,0,.35); --shadow-lg:0 -10px 40px rgba(0,0,0,.5); color-scheme:dark;}}
 :root[data-theme="dark"]{
   --bg:#0F1411; --surface:#171E1A; --sunk:#202923; --ink:#E6ECE7; --ink-2:#A9B6AE; --ink-3:#7E8C84;
   --line:#28322C; --line-strong:#45534B;
   --leaf:#4CBF86; --leaf-ink:#7AD6A6; --leaf-soft:#163426; --on-leaf:#0A1A11;
   --haldi:#EDB443; --haldi-soft:#2F2611; --haldi-ink:#F2C46A;
   --danger:#F08A7E; --danger-soft:#3A1D19;
-  --shadow:0 1px 2px rgba(0,0,0,.3); --shadow-lg:0 -8px 40px rgba(0,0,0,.5); color-scheme:dark;}
+  --shadow:0 1px 2px rgba(0,0,0,.35); --shadow-lg:0 -10px 40px rgba(0,0,0,.5); color-scheme:dark;}
 
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
-button,input,select{font:inherit; color:inherit}
+body{background:var(--bg); color:var(--ink); font-family:var(--f-body); font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font:inherit; color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2.5px solid var(--leaf); outline-offset:2px; border-radius:8px}
+:focus-visible{outline:2.5px solid var(--leaf); outline-offset:2px; border-radius:10px}
 [hidden]{display:none !important}
-.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
-.wrap{max-width:1080px; margin:0 auto; padding-inline:16px; padding-block:0 72px}
-@media (min-width:700px){.wrap{padding-inline:28px}}
-
-/* ---------- header ---------- */
-.top{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
-.top-in{max-width:1080px; margin:0 auto; padding:10px 16px; display:flex; align-items:center; gap:8px}
-@media (min-width:700px){.top-in{padding:12px 28px}}
-.logo{display:flex; align-items:center; gap:10px; flex:1; min-width:0; text-decoration:none; color:var(--ink)}
-.logo-mark{width:36px; height:36px; border-radius:11px; background:var(--leaf); display:grid; place-items:center; color:var(--on-leaf); flex:none}
-.logo b{font-family:var(--f-display); font-weight:750; font-size:1.3rem; letter-spacing:-.02em}
-.icon-btn{position:relative; width:44px; height:44px; display:grid; place-items:center; border-radius:13px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); text-decoration:none; transition:border-color .15s, color .15s}
-.icon-btn:hover{border-color:var(--line-strong); color:var(--ink)}
-.icon-btn.on{border-color:var(--leaf); color:var(--leaf-ink); background:var(--leaf-soft)}
-.icon-btn .lbl{display:none}
-@media (min-width:900px){.icon-btn{width:auto; padding:0 14px; grid-auto-flow:column; gap:8px; font-weight:600; font-size:.92rem}.icon-btn .lbl{display:inline}}
-.badge{position:absolute; top:-7px; right:-7px; min-width:21px; height:21px; padding:0 6px; border-radius:99px; background:var(--leaf); color:var(--on-leaf); font-size:.72rem; font-weight:700; display:grid; place-items:center; font-variant-numeric:tabular-nums; border:2px solid var(--bg)}
-.badge.fav{background:var(--haldi); color:#2A1C00}
-.badge:empty{display:none}
-
-/* ---------- type ---------- */
-h1,h2,h3{font-family:var(--f-display); letter-spacing:-.02em; margin:0; text-wrap:balance}
-h1{font-size:clamp(1.6rem, 4vw, 2.1rem); font-weight:750; line-height:1.1}
-h2{font-size:1.22rem; font-weight:650; line-height:1.25}
-h3{font-size:1.2rem; font-weight:650; line-height:1.25}
-.muted{color:var(--ink-2)} .small{font-size:.86rem} .tiny{font-size:.78rem}
-.label{font-family:var(--f-display); font-size:.72rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
 p{margin:0}
-
-/* ---------- layout pieces ---------- */
-.hello{padding-block:24px 18px; display:flex; flex-direction:column; gap:6px}
-.home-grid{display:grid; gap:16px; align-items:start}
-@media (min-width:900px){.home-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px}.home-grid .col-right{position:sticky; top:84px}}
+h1,h2,h3{font-family:var(--f-display); letter-spacing:-.02em; margin:0; text-wrap:balance}
+h1{font-size:clamp(1.65rem, 4.2vw, 2.2rem); font-weight:750; line-height:1.08}
+h2{font-size:1.25rem; font-weight:650; line-height:1.25}
+h3{font-size:1.18rem; font-weight:650; line-height:1.25}
+.muted{color:var(--ink-2)} .small{font-size:.88rem} .tiny{font-size:.78rem}
+.label{font-family:var(--f-display); font-size:.72rem; font-weight:650; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
 .stack{display:flex; flex-direction:column; gap:14px}
-.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; box-shadow:var(--shadow)}
-.card-head{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px}
-.page-head{display:flex; align-items:center; gap:12px; padding-block:22px 16px}
-.back{width:42px; height:42px; border-radius:12px; border:1px solid var(--line); background:var(--surface); display:grid; place-items:center; flex:none; color:var(--ink)}
-.narrow{max-width:760px; margin-inline:auto}
+.row-flex{display:flex; align-items:center; gap:10px}
+.spacer{flex:1}
 
-/* ---------- buttons & inputs ---------- */
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:10px 16px; border-radius:12px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; text-decoration:none; color:var(--ink); transition:transform .1s, border-color .15s, background .15s}
+/* ---------- app shell ---------- */
+.app{min-height:100vh}
+.main{padding:calc(env(safe-area-inset-top,0px) + 8px) 16px calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 32px)}
+.page{max-width:720px; margin:0 auto}
+.page.wide{max-width:1100px}
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; padding-block:18px 18px}
+.page-head p{margin-top:4px}
+
+/* bottom bar (phone) */
+.nav{position:fixed; z-index:30; left:0; right:0; bottom:0; display:flex; background:color-mix(in srgb, var(--surface) 94%, transparent); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-top:1px solid var(--line); padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav .brand{display:none}
+.nav a{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:52px; text-decoration:none; color:var(--ink-3); font-size:.74rem; font-weight:600; border-radius:14px; position:relative}
+.nav a .ic{width:56px; height:30px; display:grid; place-items:center; border-radius:99px; transition:background .15s}
+.nav a[aria-current="page"]{color:var(--leaf-ink)}
+.nav a[aria-current="page"] .ic{background:var(--leaf-soft)}
+.nav .badge{position:absolute; top:2px; left:calc(50% + 6px); min-width:19px; height:19px; padding:0 5px; border-radius:99px; background:var(--leaf); color:var(--on-leaf); font-size:.68rem; font-weight:700; display:grid; place-items:center; font-variant-numeric:tabular-nums; border:2px solid var(--surface)}
+.nav .badge.fav{background:var(--haldi); color:#2A1C00}
+.nav .badge:empty{display:none}
+
+/* rail (tablet) and sidebar (desktop) */
+@media (min-width:768px){
+  :root{--nav-h:0px}
+  .nav{top:0; right:auto; width:88px; flex-direction:column; justify-content:flex-start; gap:6px; border-top:0; border-right:1px solid var(--line); padding:calc(env(safe-area-inset-top,0px) + 16px) 8px 16px}
+  .nav .brand{display:grid; place-items:center; margin-bottom:14px}
+  .nav a{flex:none; min-height:64px}
+  .main{margin-left:88px; padding:calc(env(safe-area-inset-top,0px) + 16px) 32px 48px}
+}
+@media (min-width:1100px){
+  .nav{width:236px; padding-inline:14px; align-items:stretch}
+  .nav .brand{display:flex; justify-content:flex-start; gap:10px; padding:4px 10px 18px}
+  .nav .brand b{display:inline}
+  .nav a{flex-direction:row; justify-content:flex-start; gap:12px; min-height:48px; padding:0 12px; font-size:.95rem}
+  .nav a .ic{width:28px; height:28px}
+  .nav a[aria-current="page"]{background:var(--leaf-soft)}
+  .nav a[aria-current="page"] .ic{background:none}
+  .nav .badge{position:static; margin-left:auto; border:0}
+  .main{margin-left:236px; padding-inline:40px}
+}
+.logo-mark{width:40px; height:40px; border-radius:12px; background:var(--leaf); display:grid; place-items:center; color:var(--on-leaf); flex:none}
+.brand b{display:none; font-family:var(--f-display); font-weight:750; font-size:1.35rem; letter-spacing:-.02em; color:var(--ink); align-self:center}
+
+/* ---------- controls ---------- */
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:10px 18px; border-radius:14px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; text-decoration:none; color:var(--ink); transition:transform .1s, border-color .15s, background .15s; white-space:nowrap}
 .btn:hover{border-color:var(--ink-2)}
 .btn:active{transform:scale(.98)}
 .btn.solid{background:var(--ink); color:var(--bg); border-color:var(--ink)}
 .btn.leaf{background:var(--leaf); color:var(--on-leaf); border-color:var(--leaf)}
 .btn.soft{background:var(--leaf-soft); color:var(--leaf-ink); border-color:transparent}
 .btn.ghost{background:transparent; border-color:transparent; color:var(--ink-2)}
-.btn.danger{color:var(--danger); border-color:var(--danger); background:var(--surface)}
+.btn.sm{min-height:40px; padding:6px 14px; border-radius:12px; font-size:.9rem}
 .btn.block{width:100%}
+.btn.big{min-height:60px; font-family:var(--f-display); font-size:1.2rem; font-weight:750; border-radius:18px}
 .btn:disabled{opacity:.45; cursor:not-allowed; transform:none}
-.btn.big{min-height:58px; font-family:var(--f-display); font-size:1.2rem; font-weight:750; border-radius:15px}
-.input{width:100%; min-width:0; min-height:48px; padding:12px 14px; border-radius:12px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink)}
+.icon-btn{width:44px; height:44px; display:grid; place-items:center; border-radius:13px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2)}
+.icon-btn:hover{color:var(--ink); border-color:var(--line-strong)}
+.input{width:100%; min-width:0; min-height:50px; padding:12px 14px; border-radius:14px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink)}
 .input::placeholder{color:var(--ink-3)}
 .input:focus{outline:none; border-color:var(--leaf); box-shadow:0 0 0 3px var(--leaf-soft)}
+.search{position:relative}
+.search .input{padding-left:46px}
+.search .s-ic{position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--ink-3); pointer-events:none}
 .field{display:flex; flex-direction:column; gap:6px; min-width:0}
-.field > label{font-size:.86rem; font-weight:600; color:var(--ink-2)}
-.err-text{color:var(--danger); font-size:.85rem; font-weight:600}
-
-.seg{display:grid; grid-auto-columns:1fr; grid-auto-flow:column; background:var(--sunk); border-radius:13px; padding:4px; gap:4px}
-.seg button{border:0; background:transparent; min-height:42px; padding:8px 6px; border-radius:10px; font-weight:600; color:var(--ink-2)}
+.field > label{font-size:.88rem; font-weight:600; color:var(--ink-2)}
+.err-text{color:var(--danger); font-size:.88rem; font-weight:600}
+.seg{display:grid; grid-auto-columns:1fr; grid-auto-flow:column; background:var(--sunk); border-radius:15px; padding:4px; gap:4px}
+.seg button{border:0; background:transparent; min-height:44px; padding:8px 6px; border-radius:11px; font-weight:600; color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.1)}
-
 .chips{display:flex; flex-wrap:wrap; gap:8px}
-.chip{display:inline-flex; align-items:center; gap:6px; min-height:34px; padding:6px 12px; border-radius:99px; border:1px solid var(--line-strong); background:var(--surface); font-size:.88rem; font-weight:500}
+.chip{display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:6px 13px; border-radius:99px; border:1px solid var(--line-strong); background:var(--surface); font-size:.9rem; font-weight:500; color:var(--ink)}
+button.chip:hover{border-color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
 .chip.use{background:var(--leaf-soft); border-color:transparent; color:var(--leaf-ink); min-height:28px; padding:3px 10px; font-size:.82rem; font-weight:600}
-.chip .x{border:0; background:none; padding:0 0 0 2px; color:var(--ink-3); font-size:1.1rem; line-height:1; min-width:20px}
+.chip.miss{background:var(--danger-soft); border-color:transparent; color:var(--danger); min-height:28px; padding:3px 10px; font-size:.82rem; font-weight:600}
+.hscroll{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; scroll-snap-type:x proximity}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll > *{flex:none; scroll-snap-align:start}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; box-shadow:var(--shadow)}
 
-/* ---------- combobox ---------- */
-.combo{position:relative}
-.combo-input{padding-left:44px}
-.combo-icon{position:absolute; left:14px; top:14px; color:var(--ink-3); pointer-events:none}
-.combo-list{position:absolute; z-index:15; left:0; right:0; top:calc(100% + 6px); background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.14); max-height:min(360px, 55vh); overflow-y:auto; padding:6px; margin:0; list-style:none}
-.opt{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; min-height:48px}
-.opt[aria-selected="true"], .opt:hover{background:var(--sunk)}
-.opt .o-main{flex:1; min-width:0}
-.opt .o-name{font-weight:600}
-.opt .o-name mark{background:none; color:var(--leaf-ink); text-decoration:underline; text-underline-offset:3px}
-.opt .o-sub{font-size:.8rem; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.opt .o-have{font-size:.75rem; font-weight:700; color:var(--leaf-ink); background:var(--leaf-soft); padding:3px 8px; border-radius:99px; white-space:nowrap}
-.opt.custom .o-name{color:var(--leaf-ink)}
-.combo-empty{padding:14px; color:var(--ink-2); font-size:.9rem}
+/* ---------- cook page ---------- */
+.cook-grid{display:grid; gap:16px; align-items:start}
+@media (min-width:1100px){.cook-grid{grid-template-columns:380px minmax(0,1fr); gap:28px}.cook-grid .left{position:sticky; top:24px}}
+.hero{background:var(--leaf); color:var(--on-leaf); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow)}
+.hero h2{font-size:1.45rem}
+.hero .seg{background:color-mix(in srgb, var(--on-leaf) 16%, transparent)}
+.hero .seg button{color:color-mix(in srgb, var(--on-leaf) 85%, transparent)}
+.hero .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink)}
+.hero .btn.go{background:var(--surface); color:var(--leaf-ink); border-color:var(--surface)}
+.hero .hint{font-size:.85rem; color:color-mix(in srgb, var(--on-leaf) 82%, transparent); text-align:center}
+.kit-card{display:flex; flex-direction:column; gap:12px}
+.kit-top{display:flex; align-items:center; gap:12px}
+.kit-count{font-family:var(--f-display); font-weight:750; font-size:2rem; line-height:1; font-variant-numeric:tabular-nums}
+.kit-preview{display:flex; flex-wrap:wrap; gap:6px}
+.kit-preview .chip{min-height:30px; padding:3px 11px; font-size:.84rem}
 
-/* selected item panel */
-.picked{margin-top:12px; border:1.5px solid var(--leaf); background:var(--leaf-soft); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:12px}
-.picked-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
-.picked-top b{font-family:var(--f-display); font-size:1.15rem}
-.qty-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-.stepper{display:inline-flex; align-items:center; border:1px solid var(--line-strong); border-radius:12px; background:var(--surface); overflow:hidden}
-.stepper button{width:44px; height:44px; border:0; background:none; font-size:1.25rem; font-weight:600; color:var(--ink)}
-.stepper button:hover{background:var(--sunk)}
-.stepper input{width:64px; height:44px; border:0; text-align:center; background:transparent; font-weight:600; font-variant-numeric:tabular-nums; -moz-appearance:textfield}
-.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none}
-.units{display:flex; flex-wrap:wrap; gap:6px}
-.unit{min-height:40px; min-width:48px; padding:6px 12px; border-radius:10px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; font-size:.88rem}
-.unit[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+/* progress */
+.progress{display:flex; flex-direction:column; gap:12px}
+.step{display:flex; align-items:center; gap:12px; font-weight:600; color:var(--ink-3)}
+.step .dot{width:26px; height:26px; border-radius:50%; border:2px solid var(--line-strong); display:grid; place-items:center; flex:none; font-size:.8rem}
+.step.now{color:var(--ink)}
+.step.now .dot{border-color:var(--leaf); border-top-color:transparent}
+@media (prefers-reduced-motion:no-preference){.step.now .dot{animation:spin .8s linear infinite}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.step.done{color:var(--ink-2)}
+.step.done .dot{background:var(--leaf); border-color:var(--leaf); color:var(--on-leaf)}
+.skel{height:14px; border-radius:7px; background:var(--sunk)}
+@media (prefers-reduced-motion:no-preference){.skel{animation:pulse 1.2s ease-in-out infinite}}
+@keyframes pulse{50%{opacity:.45}}
 
-.or-row{display:flex; align-items:center; gap:10px; margin:14px 0 12px; color:var(--ink-3); font-size:.8rem}
-.or-row::before,.or-row::after{content:""; flex:1; height:1px; background:var(--line)}
-.browse-row{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-.browse-row .btn{white-space:nowrap}
-@media (max-width:360px){.browse-row{grid-template-columns:1fr}}
-
-/* ---------- bottom sheet / modal ---------- */
-.scrim{position:fixed; inset:0; background:rgba(10,15,12,.45); z-index:40; opacity:0; transition:opacity .2s}
-.scrim.show{opacity:1}
-.sheet{position:fixed; z-index:41; left:0; right:0; bottom:0; max-height:88vh; background:var(--surface); border-radius:22px 22px 0 0; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform .25s ease; padding-bottom:env(safe-area-inset-bottom,0px)}
-.sheet.show{transform:none}
-@media (min-width:700px){.sheet{left:50%; right:auto; bottom:auto; top:50%; width:min(760px, 92vw); max-height:84vh; border-radius:22px; transform:translate(-50%,-46%); opacity:0; transition:all .2s ease}.sheet.show{transform:translate(-50%,-50%); opacity:1}}
-.grab{width:42px; height:5px; border-radius:99px; background:var(--line-strong); margin:10px auto 0}
-@media (min-width:700px){.grab{display:none}}
-.sheet-head{padding:14px 18px 10px; display:flex; flex-direction:column; gap:12px; border-bottom:1px solid var(--line)}
-.sheet-title{display:flex; align-items:center; justify-content:space-between; gap:10px}
-.tabs{display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; margin:0 -18px; padding-inline:18px; scroll-snap-type:x proximity}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex:none; min-height:38px; padding:7px 14px; border-radius:99px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; font-size:.88rem; color:var(--ink-2); scroll-snap-align:start; white-space:nowrap}
-.tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
-.tab .n{opacity:.7; font-weight:500; margin-left:4px; font-variant-numeric:tabular-nums}
-.sheet-body{overflow-y:auto; padding:16px 18px; flex:1; -webkit-overflow-scrolling:touch}
-.pack{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border-radius:14px; background:var(--haldi-soft); border:1px solid color-mix(in srgb, var(--haldi) 50%, transparent); margin-bottom:16px}
-.pack b{font-family:var(--f-display)}
-.pack .btn{white-space:nowrap; flex:none}
-@media (max-width:460px){.pack{flex-direction:column; align-items:stretch}}
-body.sheet-open .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
-.card-head .btn{white-space:nowrap}
-.tiles{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(150px, 44%), 1fr)); gap:10px}
-.tile{position:relative; text-align:left; min-height:68px; padding:12px 40px 12px 14px; border-radius:14px; border:1.5px solid var(--line); background:var(--surface); display:flex; flex-direction:column; justify-content:center; gap:2px; transition:border-color .15s, background .15s}
-.tile:hover{border-color:var(--line-strong)}
-.tile .t-name{font-weight:600; line-height:1.25}
-.tile .t-alias{font-size:.76rem; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.tile .t-mark{position:absolute; right:12px; top:50%; transform:translateY(-50%); width:24px; height:24px; border-radius:50%; border:1.5px solid var(--line-strong); display:grid; place-items:center; font-size:.95rem; font-weight:700; color:var(--ink-3)}
-.tile[aria-pressed="true"]{border-color:var(--leaf); background:var(--leaf-soft)}
-.tile[aria-pressed="true"] .t-mark{background:var(--leaf); border-color:var(--leaf); color:var(--on-leaf)}
-.sheet-foot{padding:12px 18px; border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; gap:12px}
-
-/* ---------- results ---------- */
+/* meal cards */
+.results{display:grid; gap:14px}
+@media (min-width:768px) and (max-width:1099px){.results.two{grid-template-columns:1fr 1fr}}
 .meal{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; display:flex; flex-direction:column; gap:12px; box-shadow:var(--shadow)}
-.meal-top{display:flex; justify-content:space-between; gap:12px; align-items:flex-start}
-.slot{font-family:var(--f-display); font-size:.72rem; font-weight:750; letter-spacing:.09em; text-transform:uppercase; color:var(--leaf-ink)}
-.mins{flex:none; display:inline-flex; align-items:center; gap:5px; font-size:.82rem; font-weight:600; color:var(--ink-2); background:var(--sunk); padding:5px 10px; border-radius:99px; font-variant-numeric:tabular-nums}
+.meal-top{display:flex; gap:14px; align-items:flex-start}
+.meal-ic{width:48px; height:48px; border-radius:14px; display:grid; place-items:center; flex:none; background:var(--haldi-soft); color:var(--haldi-ink)}
+.meal-ic.lunch{background:var(--leaf-soft); color:var(--leaf-ink)}
+.slot{font-family:var(--f-display); font-size:.72rem; font-weight:750; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.mins{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; font-weight:600; color:var(--ink-2); margin-top:3px}
 .why{color:var(--ink-2)}
-.meal-actions{display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; align-items:center}
-.meal-actions .spacer{flex:1}
-.act{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:42px; min-width:42px; border:1px solid var(--line); background:var(--surface); padding:8px 12px; border-radius:12px; font-size:.88rem; font-weight:600; color:var(--ink-2)}
-.act:hover{border-color:var(--line-strong)}
+.grounded{display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; color:var(--leaf-ink)}
+.meal-actions{display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; align-items:center; flex-wrap:wrap}
+.act{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; min-width:44px; border:1px solid var(--line); background:var(--surface); padding:8px 13px; border-radius:13px; font-size:.9rem; font-weight:600; color:var(--ink-2)}
+.act:hover{border-color:var(--line-strong); color:var(--ink)}
 .act[aria-pressed="true"].heart{background:var(--haldi-soft); border-color:var(--haldi); color:var(--haldi-ink)}
 .act[aria-pressed="true"].up{background:var(--leaf-soft); border-color:var(--leaf); color:var(--leaf-ink)}
 .act[aria-pressed="true"].down{background:var(--danger-soft); border-color:var(--danger); color:var(--danger)}
 .act[aria-pressed="true"] svg{fill:currentColor}
-.empty{text-align:center; padding:36px 20px; border:1.5px dashed var(--line-strong); border-radius:var(--r); color:var(--ink-2); display:flex; flex-direction:column; align-items:center; gap:10px}
-.empty h2{color:var(--ink)}
-.notice{border-radius:var(--r); padding:16px; border:1px solid; display:flex; flex-direction:column; gap:10px}
-.notice.warn{background:var(--haldi-soft); border-color:var(--haldi)}
-.notice.err{background:var(--danger-soft); border-color:var(--danger)}
-.placeholder{border:1.5px dashed var(--line-strong); border-radius:var(--r); padding:26px 20px; text-align:center; color:var(--ink-2)}
-.skel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px; display:flex; flex-direction:column; gap:12px}
-.skel i{display:block; height:12px; border-radius:6px; background:var(--sunk)}
-@media (prefers-reduced-motion:no-preference){.skel i{animation:pulse 1.2s ease-in-out infinite}}
-@keyframes pulse{50%{opacity:.45}}
+.why-not{display:flex; flex-direction:column; gap:8px; background:var(--sunk); border-radius:14px; padding:12px}
+.notice{border-radius:var(--r); padding:18px; border:1px solid; display:flex; flex-direction:column; gap:10px}
+.notice.warn{background:var(--haldi-soft); border-color:color-mix(in srgb, var(--haldi) 60%, transparent)}
+.notice.err{background:var(--danger-soft); border-color:color-mix(in srgb, var(--danger) 50%, transparent)}
+.placeholder{border:1.5px dashed var(--line-strong); border-radius:var(--r); padding:30px 20px; text-align:center; color:var(--ink-2); display:flex; flex-direction:column; align-items:center; gap:8px}
+.remaining{font-size:.82rem; color:var(--ink-3); text-align:center}
 
-/* ---------- kitchen list ---------- */
-.group-h{display:flex; justify-content:space-between; align-items:baseline; margin:6px 4px 8px}
+/* ---------- kitchen page ---------- */
+.k-tools{position:sticky; top:calc(env(safe-area-inset-top,0px)); z-index:5; background:var(--bg); padding-block:8px 10px; display:flex; flex-direction:column; gap:10px}
+.group-h{display:flex; justify-content:space-between; align-items:baseline; margin:18px 4px 8px}
 .rows{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
-.row{display:grid; grid-template-columns:minmax(0,1fr) auto auto 44px; gap:10px; align-items:center; padding:10px 12px 10px 16px; border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
-.row .r-name{font-weight:600; overflow-wrap:anywhere}
-.row .r-sub{display:block; font-size:.76rem; color:var(--ink-3); font-weight:400}
-.row .r-qty{width:84px; min-height:42px; padding:8px 10px; text-align:center}
-.row select{min-height:42px; padding:8px 10px; border-radius:11px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-weight:600}
-.del{width:44px; height:44px; border-radius:12px; border:1px solid transparent; background:none; color:var(--ink-3); display:grid; place-items:center}
+.irow{display:grid; grid-template-columns:minmax(0,1fr) auto auto 40px; gap:8px; align-items:center; padding:10px 8px 10px 16px; border-bottom:1px solid var(--line)}
+.irow:last-child{border-bottom:0}
+.irow .n{font-weight:600; overflow-wrap:anywhere; line-height:1.25}
+.irow .a{display:block; font-size:.76rem; color:var(--ink-3); font-weight:400}
+.stepper{display:inline-flex; align-items:center; border:1px solid var(--line-strong); border-radius:12px; background:var(--surface); overflow:hidden}
+.stepper button{width:36px; height:40px; border:0; background:none; font-size:1.15rem; font-weight:600; color:var(--ink)}
+.stepper button:hover{background:var(--sunk)}
+.stepper input{width:46px; height:40px; font-size:.95rem; border:0; text-align:center; background:transparent; font-weight:600; font-variant-numeric:tabular-nums; -moz-appearance:textfield; padding:0}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none}
+.stepper.lg button{width:46px; height:48px} .stepper.lg input{width:70px; height:48px}
+.unit-sel{min-height:40px; padding:6px 8px; border-radius:12px; border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); font-weight:600; font-size:.88rem}
+.del{width:40px; height:40px; border-radius:12px; border:0; background:none; color:var(--ink-3); display:grid; place-items:center}
 .del:hover{color:var(--danger); background:var(--danger-soft)}
-@media (max-width:520px){
-  .row{grid-template-columns:minmax(0,1fr) 60px 74px 38px; gap:6px; padding:8px 8px 8px 14px}
-  .row .r-qty{width:60px; padding:6px; min-height:40px} .row select{padding:6px; min-height:40px} .del{width:38px; height:38px}
+@media (max-width:420px){
+  .irow{grid-template-columns:minmax(0,1fr) auto auto 36px; gap:6px; padding:10px 6px 10px 12px}
+  .irow .stepper button{width:30px} .irow .stepper input{width:40px; font-size:.9rem} .irow .unit-sel{padding:6px 4px; font-size:.84rem} .irow .del{width:36px}
 }
 @media (max-width:340px){
-  .row{grid-template-columns:minmax(0,1fr) 44px; grid-template-areas:"name del" "qty qty"; row-gap:8px}
-  .row .r-name{grid-area:name} .row .del{grid-area:del}
-  .row .r-ctl{grid-area:qty; display:flex; gap:8px}
-  .row .r-qty{flex:1; width:auto}
+  .irow{grid-template-columns:minmax(0,1fr) 40px; grid-template-areas:"n d" "c c"; row-gap:8px}
+  .irow .n{grid-area:n} .irow .del{grid-area:d} .irow .ctl{grid-area:c; display:flex; gap:8px}
+  .irow .ctl .unit-sel{flex:1}
 }
-@media (min-width:341px){.row .r-ctl{display:contents}}
+@media (min-width:341px){.irow .ctl{display:contents}}
+@media (max-width:767px){#k-list{padding-bottom:72px}}
+.fab{position:fixed; z-index:25; right:16px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); min-height:56px; padding:0 22px; border-radius:18px; box-shadow:0 8px 24px rgba(31,107,71,.35)}
+@media (min-width:768px){.fab{position:static; box-shadow:none}}
+.empty{text-align:center; padding:34px 20px; border:1.5px dashed var(--line-strong); border-radius:var(--r); color:var(--ink-2); display:flex; flex-direction:column; align-items:center; gap:12px}
+.empty h2{color:var(--ink)}
 
-/* favourites */
+/* ---------- saved ---------- */
 .fav-grid{display:grid; gap:14px}
-@media (min-width:700px){.fav-grid{grid-template-columns:1fr 1fr}}
-.status{display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:600; padding:4px 10px; border-radius:99px; width:max-content; max-width:100%}
+@media (min-width:768px){.fav-grid{grid-template-columns:1fr 1fr}}
+@media (min-width:1300px){.fav-grid{grid-template-columns:1fr 1fr 1fr}}
+.status{display:inline-flex; align-items:center; gap:6px; font-size:.82rem; font-weight:700; padding:4px 10px; border-radius:99px; width:max-content; max-width:100%}
 .status.ok{background:var(--leaf-soft); color:var(--leaf-ink)}
 .status.no{background:var(--sunk); color:var(--ink-2)}
 
-/* ---------- auth ---------- */
-.auth{min-height:100vh; display:grid; place-items:center; padding:28px 16px}
+/* ---------- add sheet ---------- */
+.scrim{position:fixed; inset:0; background:rgba(10,15,12,.45); z-index:40; opacity:0; transition:opacity .2s}
+.scrim.show{opacity:1}
+.sheet{position:fixed; z-index:41; left:0; right:0; bottom:0; height:min(92vh, 900px); background:var(--surface); border-radius:24px 24px 0 0; box-shadow:var(--shadow-lg); display:flex; flex-direction:column; transform:translateY(100%); transition:transform .26s cubic-bezier(.2,.8,.2,1); padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.show{transform:none}
+@media (min-width:768px){.sheet{left:50%; right:auto; bottom:auto; top:50%; width:min(780px, 92vw); height:min(86vh, 860px); border-radius:24px; transform:translate(-50%,-47%); opacity:0; transition:all .2s ease}.sheet.show{transform:translate(-50%,-50%); opacity:1}}
+.grab{width:42px; height:5px; border-radius:99px; background:var(--line-strong); margin:10px auto 0; flex:none}
+@media (min-width:768px){.grab{display:none}}
+.sheet-head{padding:12px 18px 12px; display:flex; flex-direction:column; gap:12px; border-bottom:1px solid var(--line)}
+.sheet-body{overflow-y:auto; padding:16px 18px 24px; flex:1; -webkit-overflow-scrolling:touch}
+.sheet-foot{padding:12px 18px; border-top:1px solid var(--line); display:flex; align-items:center; gap:12px}
+.tab{min-height:38px; padding:7px 14px; border-radius:99px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; font-size:.88rem; color:var(--ink-2); white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.tab .n{opacity:.7; font-weight:500; margin-left:4px; font-variant-numeric:tabular-nums}
+.pack{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px; border-radius:16px; background:var(--haldi-soft); margin-bottom:12px}
+.pack b{font-family:var(--f-display)}
+@media (max-width:460px){.pack{flex-direction:column; align-items:stretch}}
+.tiles{display:grid; grid-template-columns:repeat(auto-fill, minmax(min(150px, 44%), 1fr)); gap:10px}
+.tile{position:relative; text-align:left; min-height:66px; padding:11px 42px 11px 14px; border-radius:16px; border:1.5px solid var(--line); background:var(--surface); display:flex; flex-direction:column; justify-content:center; gap:1px; transition:border-color .15s, background .15s}
+.tile:hover{border-color:var(--line-strong)}
+.tile .t-n{font-weight:600; line-height:1.25}
+.tile .t-a{font-size:.76rem; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tile .t-m{position:absolute; right:12px; top:50%; transform:translateY(-50%); width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line-strong); display:grid; place-items:center; font-weight:700; color:var(--ink-3)}
+.tile[aria-pressed="true"]{border-color:var(--leaf); background:var(--leaf-soft)}
+.tile[aria-pressed="true"] .t-m{background:var(--leaf); border-color:var(--leaf); color:var(--on-leaf)}
+.res{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+.res-item{border-radius:14px}
+.res-btn{width:100%; display:flex; align-items:center; gap:12px; padding:11px 12px; border:0; background:none; text-align:left; border-radius:14px; min-height:56px}
+.res-btn:hover,.res-item.open .res-btn{background:var(--sunk)}
+.res-btn .rn{font-weight:600} .res-btn .rn mark{background:none; color:var(--leaf-ink); text-decoration:underline; text-underline-offset:3px}
+.res-btn .rs{font-size:.8rem; color:var(--ink-3)}
+.have{font-size:.74rem; font-weight:700; color:var(--leaf-ink); background:var(--leaf-soft); padding:3px 9px; border-radius:99px; white-space:nowrap}
+.qty-panel{padding:4px 12px 14px; display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.units{display:flex; flex-wrap:wrap; gap:6px}
+.unit{min-height:44px; min-width:50px; padding:6px 12px; border-radius:12px; border:1px solid var(--line-strong); background:var(--surface); font-weight:600; font-size:.9rem}
+.unit[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+
+/* ---------- auth & welcome ---------- */
+.auth{min-height:100vh; display:grid; place-items:center; padding:calc(env(safe-area-inset-top,0px) + 28px) 16px 28px}
 .auth-box{width:min(440px, 100%); display:flex; flex-direction:column; gap:22px}
-.auth-box h1{font-size:clamp(1.9rem, 6vw, 2.4rem)}
+.auth .brand{display:flex; gap:10px} .auth .brand b{display:inline}
 .pw{position:relative}
-.pw .input{padding-right:72px}
-.pw button{position:absolute; right:6px; top:6px; height:36px; padding:0 12px; border:0; background:var(--sunk); border-radius:9px; font-size:.8rem; font-weight:700; color:var(--ink-2)}
+.pw .input{padding-right:76px}
+.pw button{position:absolute; right:7px; top:7px; height:36px; padding:0 12px; border:0; background:var(--sunk); border-radius:10px; font-size:.8rem; font-weight:700; color:var(--ink-2)}
 .meter{height:5px; border-radius:99px; background:var(--sunk); overflow:hidden}
 .meter i{display:block; height:100%; width:0; transition:width .2s, background .2s}
 .switch-auth{text-align:center; color:var(--ink-2)}
 .switch-auth a{color:var(--leaf-ink); font-weight:700}
-.demo-note{font-size:.8rem; color:var(--ink-3); text-align:center}
+.welcome{max-width:760px; margin:0 auto; padding-block:calc(env(safe-area-inset-top,0px) + 20px) 120px}
+.dots{display:flex; gap:6px} .dots i{width:28px; height:5px; border-radius:99px; background:var(--line)} .dots i.on{background:var(--leaf)}
+.diet{display:grid; gap:12px}
+@media (min-width:600px){.diet{grid-template-columns:repeat(3,1fr)}}
+.diet button{text-align:left; padding:18px; border-radius:18px; border:1.5px solid var(--line); background:var(--surface); display:flex; flex-direction:column; gap:4px; min-height:96px}
+.diet button b{font-family:var(--f-display); font-size:1.15rem}
+.diet button[aria-pressed="true"]{border-color:var(--leaf); background:var(--leaf-soft)}
+.welcome-foot{position:fixed; left:0; right:0; bottom:0; padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px)); background:var(--surface); border-top:1px solid var(--line); display:flex; gap:10px; justify-content:center; z-index:20}
+.welcome-foot > div{width:min(760px, 100%); display:flex; gap:10px; align-items:center}
 
 /* ---------- toast ---------- */
-.toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(16px); background:var(--ink); color:var(--bg); padding:8px 8px 8px 16px; border-radius:14px; font-weight:600; font-size:.92rem; opacity:0; pointer-events:none; transition:all .2s; z-index:60; display:flex; align-items:center; gap:12px; max-width:calc(100vw - 32px); min-height:44px}
+.toast{position:fixed; left:50%; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); transform:translateX(-50%) translateY(16px); background:var(--ink); color:var(--bg); padding:8px 8px 8px 16px; border-radius:14px; font-weight:600; font-size:.92rem; opacity:0; pointer-events:none; transition:all .2s; z-index:60; display:flex; align-items:center; gap:12px; max-width:calc(100vw - 32px); min-height:46px}
 .toast.show{opacity:1; transform:translateX(-50%) translateY(0); pointer-events:auto}
-.toast button{border:0; background:color-mix(in srgb, var(--bg) 18%, transparent); color:var(--bg); padding:7px 12px; border-radius:9px; font-weight:700}
-.toast button[hidden]{display:none}
-.toast:not(:has(button:not([hidden]))){padding-right:16px}
-
+.toast.plain{padding-right:16px}
+.toast button{border:0; background:color-mix(in srgb, var(--bg) 18%, transparent); color:var(--bg); padding:8px 12px; border-radius:10px; font-weight:700}
+body.sheet-open .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+@media (min-width:768px){.toast{bottom:24px}}
 @media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
 </style>
 </head>
 <body>
-<header class="top" id="top" hidden>
-  <div class="top-in">
-    <a class="logo" href="#/"><span class="logo-mark" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 7.5c0-1.5 1-2 1-3.5M14 7.5c0-1.5 1-2 1-3.5"/></svg></span><b>Rasoi</b></a>
-    <a class="icon-btn" href="#/kitchen" id="nav-kitchen" aria-label="My kitchen"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10h18"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span class="lbl">My kitchen</span><span class="badge" id="b-kitchen"></span></a>
-    <a class="icon-btn" href="#/favourites" id="nav-fav" aria-label="Favourites"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span class="lbl">Favourites</span><span class="badge fav" id="b-fav"></span></a>
-    <a class="icon-btn" href="#/settings" id="nav-settings" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2-1.2L14.3 3h-4l-.4 2.7a7 7 0 0 0-2 1.2l-2.3-1-2 3.4 2 1.5a7 7 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2 1.2l.4 2.7h4l.4-2.7a7 7 0 0 0 2-1.2l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.2Z"/></svg><span class="lbl">Settings</span></a>
-  </div>
-</header>
-<main class="wrap" id="view"></main>
-
+<div class="app" id="app"></div>
 <div class="scrim" id="scrim" hidden></div>
 <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden></section>
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-msg"></span><button type="button" id="toast-act" hidden>Undo</button></div>
@@ -279,28 +312,24 @@ body.sheet-open .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
 <script src="ingredients.js"></script>
 <script>
 /* =========================================================
-   DIRECTORY
+   DIRECTORY + SEARCH
    ========================================================= */
-const ING = window.INGREDIENTS;
+const ING = window.INGREDIENTS || [];
 const ING_BY_NAME = Object.fromEntries(ING.map(i => [i.name.toLowerCase(), i]));
 const CATEGORIES = [...new Set(ING.map(i => i.category))];
 const CUSTOM_UNITS = ['pcs','g','kg','ml','L','packet'];
 const POPULAR = ['Onion','Tomato','Potato','Garlic','Ginger','Green chilli','Coriander leaves','Lemon','Rice','Atta','Toor dal','Moong dal','Besan','Poha','Sooji','Milk','Curd','Paneer','Eggs','Bread','Butter','Ghee','Peanuts','Green peas'];
 const PACKS = [
-  {name:'Everyday basics', items:['Onion','Tomato','Potato','Garlic','Ginger','Green chilli','Rice','Atta','Toor dal','Curd']},
-  {name:'Breakfast shelf', items:['Poha','Sooji','Besan','Bread','Eggs','Milk','Butter','Peanuts']}
+  {name: 'Everyday basics', items: ['Onion','Tomato','Potato','Garlic','Ginger','Green chilli','Rice','Atta','Toor dal','Curd']},
+  {name: 'Breakfast shelf', items: ['Poha','Sooji','Besan','Bread','Eggs','Milk','Butter','Peanuts']}
 ];
-const DEFAULT_STAPLES = ['Salt','Sunflower oil','Water','Haldi','Jeera','Mustard seeds','Red chilli powder','Garam masala'];
 const norm = s => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
-
 function searchIngredients(q){
   const n = norm(q); if (!n) return [];
   const out = [];
   for (const i of ING){
     const name = norm(i.name); let score = 0, via = null;
-    if (name === n) score = 120;
-    else if (name.startsWith(n)) score = 100;
-    else if (name.split(' ').some(w => w.startsWith(n))) score = 85;
+    if (name === n) score = 120; else if (name.startsWith(n)) score = 100; else if (name.split(' ').some(w => w.startsWith(n))) score = 85;
     for (const a of i.aliases){
       const an = norm(a); let s = 0;
       if (an === n) s = 110; else if (an.startsWith(n)) s = 75; else if (an.split(' ').some(w => w.startsWith(n))) s = 65; else if (an.includes(n)) s = 35;
@@ -313,9 +342,8 @@ function searchIngredients(q){
 }
 
 /* =========================================================
-   DB — Supabase. Everything is loaded into memory at log-in, so the UI
-   reads instantly. Every change updates memory first, then saves to
-   Supabase in order (a write queue), and shows a message if a save fails.
+   DB — Supabase, with everything cached in memory after log-in.
+   Changes update memory first, then save in order; a failed save shows a message.
    ========================================================= */
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2) + Date.now());
 const sb = (window.supabase && window.RASOI_CONFIG && window.RASOI_CONFIG.url) ? window.supabase.createClient(window.RASOI_CONFIG.url, window.RASOI_CONFIG.key) : null;
@@ -325,6 +353,7 @@ function save(fn){
   writeQ = writeQ.then(fn).then(res => { if (res && res.error) throw res.error; }).catch(e => { console.error('save failed', e); toast("Couldn't save that change. Check your connection and try again."); });
   return writeQ;
 }
+const local = {get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }, set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }};
 const mealFromRow = m => ({id: m.id, slot: m.slot, dish: m.dish, minutes: m.minutes, uses: m.uses || [], why: m.why});
 const DB = {
   async load(session){
@@ -333,20 +362,22 @@ const DB = {
       sb.from('profiles').select('*').eq('id', id).maybeSingle(),
       sb.from('user_staples').select('name').eq('user_id', id),
       sb.from('user_ingredients').select('*').eq('user_id', id).order('created_at'),
-      sb.from('suggestions').select('*, suggestion_meals(*)').eq('user_id', id).order('created_at', {ascending: false}).limit(30),
+      sb.from('suggestions').select('id, slot, possible, reason, unlock_ingredient, nearest_dish, nearest_missing, created_at, suggestion_meals(*)').eq('user_id', id).order('created_at', {ascending: false}).limit(30),
       sb.from('favourites').select('id, created_at, meal_id, suggestion_meals(*)').eq('user_id', id).order('created_at', {ascending: false}),
-      sb.from('meal_ratings').select('meal_id, value').eq('user_id', id)
+      sb.from('meal_ratings').select('meal_id, value, comment').eq('user_id', id)
     ]);
     const err = [p, st, ing, sug, fav, rat].find(r => r.error); if (err) throw err.error;
-    const prof = p.data || {id, name: (session.user.user_metadata || {}).name || session.user.email.split('@')[0], email: session.user.email, diet: 'veg'};
+    const prof = p.data || {name: (session.user.user_metadata || {}).name || session.user.email.split('@')[0], email: session.user.email, diet: 'veg'};
     C.user = {id, name: prof.name, email: prof.email || session.user.email, diet: prof.diet, staples: st.data.map(r => r.name)};
     C.ingredients = ing.data.map(r => ({id: r.id, catalog_id: r.catalog_id, name: r.name, category: r.category, quantity: r.quantity == null ? null : Number(r.quantity), unit: r.unit, created_at: r.created_at}));
-    C.suggestions = sug.data.map(s => ({id: s.id, slot: s.slot, possible: s.possible, reason: s.reason, unlock: s.unlock_ingredient, nearest_dish: s.nearest_dish, nearest_missing: s.nearest_missing || [], created_at: s.created_at,
-      meals: (s.suggestion_meals || []).sort((a, b) => a.slot.localeCompare(b.slot)).map(mealFromRow)}));
-    C.favourites = fav.data.filter(f => f.suggestion_meals).map(f => ({id: f.id, meal_id: f.meal_id, created_at: f.created_at, ...mealFromRow(f.suggestion_meals), id: f.id}));
+    C.suggestions = sug.data.map(s => {
+      const meals = (s.suggestion_meals || []).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const latest = ['breakfast', 'lunch'].map(sl => meals.find(m => m.slot === sl)).filter(Boolean).map(mealFromRow);   // after "Show another", the newest meal per slot is the one shown
+      return {id: s.id, slot: s.slot, possible: s.possible, reason: s.reason, unlock: s.unlock_ingredient, nearest_dish: s.nearest_dish, nearest_missing: s.nearest_missing || [], created_at: s.created_at, meals: latest};
+    });
+    C.favourites = fav.data.filter(f => f.suggestion_meals).map(f => ({...mealFromRow(f.suggestion_meals), id: f.id, meal_id: f.meal_id, created_at: f.created_at}));
     C.ratings = rat.data;
   },
-  // ---- auth ----
   currentUser(){ return C.user; },
   async signUp(name, email, pw){
     const {data, error} = await sb.auth.signUp({email, password: pw, options: {data: {name}, emailRedirectTo: location.origin}});
@@ -369,20 +400,19 @@ const DB = {
     if ('staples' in patch) save(async () => { const d = await sb.from('user_staples').delete().eq('user_id', u.id); if (d.error) return d; return patch.staples.length ? sb.from('user_staples').insert(patch.staples.map(name => ({user_id: u.id, name}))) : null; });
     return u;
   },
-  // ---- ingredients ----
   ingredients(){ return C.ingredients; },
-  has(name){ return C.ingredients.some(i => i.name.toLowerCase() === name.toLowerCase()); },
+  has(name){ return C.ingredients.some(i => i.name.toLowerCase() === String(name).toLowerCase()); },
   _row(i){ return {id: i.id, user_id: C.user.id, catalog_id: i.catalog_id, name: i.name, category: i.category, quantity: i.quantity, unit: i.unit}; },
   addIngredient(name, qty, unit){
-    const meta = ING_BY_NAME[name.toLowerCase()]; const allowed = meta ? meta.allowed_units : CUSTOM_UNITS;
+    const meta = ING_BY_NAME[String(name).toLowerCase()]; const allowed = meta ? meta.allowed_units : CUSTOM_UNITS;
     unit = allowed.includes(unit) ? unit : allowed[0];
-    let row = C.ingredients.find(i => i.name.toLowerCase() === name.toLowerCase());
+    let row = C.ingredients.find(i => i.name.toLowerCase() === String(name).toLowerCase());
     if (row){
       if (qty != null && qty !== '') row.quantity = Number(qty); row.unit = unit;
       save(() => sb.from('user_ingredients').update({quantity: row.quantity, unit: row.unit, updated_at: new Date().toISOString()}).eq('id', row.id));
       return {row, updated: true};
     }
-    row = {id: uid(), catalog_id: meta ? meta.id : null, name: meta ? meta.name : name.trim().replace(/^./, c => c.toUpperCase()), category: meta ? meta.category : 'Others', quantity: qty == null || qty === '' ? null : Number(qty), unit, created_at: new Date().toISOString()};
+    row = {id: uid(), catalog_id: meta ? meta.id : null, name: meta ? meta.name : String(name).trim().replace(/^./, c => c.toUpperCase()), category: meta ? meta.category : 'Others', quantity: qty == null || qty === '' ? null : Number(qty), unit, created_at: new Date().toISOString()};
     C.ingredients.push(row); save(() => sb.from('user_ingredients').insert(this._row(row)));
     return {row, updated: false};
   },
@@ -390,25 +420,10 @@ const DB = {
   updateIngredient(id, patch){ const r = C.ingredients.find(i => i.id === id); if (!r) return; Object.assign(r, patch); save(() => sb.from('user_ingredients').update({...patch, updated_at: new Date().toISOString()}).eq('id', id)); },
   removeIngredient(id){ const row = C.ingredients.find(i => i.id === id); C.ingredients = C.ingredients.filter(i => i.id !== id); save(() => sb.from('user_ingredients').delete().eq('id', id)); return row; },
   removeByName(name){ const row = C.ingredients.find(i => i.name.toLowerCase() === name.toLowerCase()); if (row) this.removeIngredient(row.id); return row; },
-  setIngredients(list){
-    C.ingredients = list.slice();
-    save(async () => { const d = await sb.from('user_ingredients').delete().eq('user_id', C.user.id); if (d.error || !list.length) return d; return sb.from('user_ingredients').insert(list.map(i => this._row(i))); });
-  },
-  // ---- suggestions ----
+  setIngredients(list){ C.ingredients = list.slice(); save(async () => { const d = await sb.from('user_ingredients').delete().eq('user_id', C.user.id); if (d.error || !list.length) return d; return sb.from('user_ingredients').insert(list.map(i => this._row(i))); }); },
   suggestions(){ return C.suggestions; },
   lastSuggestion(){ return C.suggestions[0] || null; },
-  saveSuggestion(s){
-    C.suggestions.unshift(s); const u = s.usage || {}; delete s.raw_output_cache;
-    save(async () => {
-      const a = await sb.from('suggestions').insert({id: s.id, user_id: C.user.id, slot: s.slot, possible: s.possible, reason: s.reason || null, unlock_ingredient: s.unlock || null,
-        ingredients_snapshot: s.ingredients_snapshot, model: u.model || 'unknown', prompt_version: u.prompt_version || 'v1', effort: u.effort || null, temperature: u.temperature ?? null,
-        input_tokens: u.input_tokens, output_tokens: u.output_tokens, cost_usd: 0, latency_ms: u.latency_ms, stop_reason: u.stop_reason,
-        raw_output: s.raw_output || null, grounding_dropped: s.grounding_dropped || [], nearest_dish: s.nearest_dish || null, nearest_missing: s.nearest_missing || []});
-      if (a.error || !s.meals.length) return a;
-      return sb.from('suggestion_meals').insert(s.meals.map(m => ({id: m.id, suggestion_id: s.id, user_id: C.user.id, slot: m.slot, dish: m.dish, why: m.why, minutes: m.minutes, uses: m.uses})));
-    });
-  },
-  // ---- favourites ----
+  addMealVariant(suggestionId, meal){ save(() => sb.from('suggestion_meals').insert({id: meal.id, suggestion_id: suggestionId, user_id: C.user.id, slot: meal.slot, dish: meal.dish, why: meal.why, minutes: meal.minutes, uses: meal.uses})); },
   favourites(){ return C.favourites; },
   isFavourite(mealId){ return C.favourites.some(f => f.meal_id === mealId); },
   toggleFavourite(meal){
@@ -420,87 +435,103 @@ const DB = {
   },
   removeFavourite(id){ const f = C.favourites.find(x => x.id === id); C.favourites = C.favourites.filter(x => x.id !== id); save(() => sb.from('favourites').delete().eq('id', id)); return f; },
   restoreFavourite(f){ C.favourites.unshift(f); save(() => sb.from('favourites').insert({id: f.id, user_id: C.user.id, meal_id: f.meal_id})); },
-  // ---- ratings ----
   rating(mealId){ const r = C.ratings.find(x => x.meal_id === mealId); return r ? r.value : 0; },
-  rate(meal, value){
+  rate(meal, value, comment){
     C.ratings = C.ratings.filter(x => x.meal_id !== meal.id);
-    if (value){ C.ratings.push({meal_id: meal.id, value}); save(() => sb.from('meal_ratings').upsert({user_id: C.user.id, meal_id: meal.id, value}, {onConflict: 'user_id,meal_id'})); }
+    if (value){ C.ratings.push({meal_id: meal.id, value, comment: comment || null}); save(() => sb.from('meal_ratings').upsert({user_id: C.user.id, meal_id: meal.id, value, comment: comment || null}, {onConflict: 'user_id,meal_id'})); }
     else save(() => sb.from('meal_ratings').delete().eq('user_id', C.user.id).eq('meal_id', meal.id));
   },
-  deleteMyData(){
-    const id = C.user.id; C.ingredients = []; C.suggestions = []; C.favourites = []; C.ratings = [];
-    save(async () => { const a = await sb.from('user_ingredients').delete().eq('user_id', id); if (a.error) return a; return sb.from('suggestions').delete().eq('user_id', id); });
-  }
+  deleteMyData(){ const id = C.user.id; C.ingredients = []; C.suggestions = []; C.favourites = []; C.ratings = []; save(async () => { const a = await sb.from('user_ingredients').delete().eq('user_id', id); if (a.error) return a; return sb.from('suggestions').delete().eq('user_id', id); }); }
 };
 
 /* =========================================================
-   AI — mocked in the preview. Step 2 replaces suggest() with a
-   call to our server function, which holds the Claude key.
+   AI — the Supabase function "suggest" reads this user's kitchen from
+   the database, calls Gemini with the secret key, checks the answer,
+   saves it, and returns one dish per meal plus spares.
    ========================================================= */
 const AI = {
-  // Calls the Supabase function "suggest". It reads this user's kitchen from the database,
-  // calls Gemini with the secret key, checks the answer, picks one dish per meal, and saves it.
   async suggest({slot, avoid}){
     const {data, error} = await sb.functions.invoke('suggest', {body: {slot, avoid}});
     if (error){
       let msg = 'Something went wrong. Try again.';
-      try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){ if (/fetch|network/i.test(String(error.message))) msg = "Can't reach Rasoi. Check your internet connection."; }
+      try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch(e){ if (/fetch|network|Failed/i.test(String(error.message))) msg = "Can't reach Rasoi. Check your internet connection."; }
       throw new Error(msg);
     }
-    if (typeof data.remaining_today === 'number') ui.remaining = data.remaining_today;
-    return {...data.suggestion, _saved: true};
+    return data;
   }
 };
 
 /* =========================================================
-   UI helpers
+   HELPERS
    ========================================================= */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const view = $('#view');
-const ui = {slot: 'both', loading: false, error: null, result: null};
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+const ui = {slot: null, loading: false, stage: 0, error: null, result: null, remaining: null, alts: {}, downOpen: null, savedFilter: 'all', kitFilter: '', kitCat: 'All'};
+function defaultSlot(){ const h = new Date().getHours(); return h < 11 ? 'breakfast' : h < 16 ? 'lunch' : 'both'; }
+function greeting(){ const h = new Date().getHours(); return h >= 5 && h < 12 ? 'Good morning' : h < 17 && h >= 12 ? 'Good afternoon' : 'Good evening'; }
+function fmtQty(i){ return i.quantity != null ? `${+i.quantity} ${i.unit}` : ''; }
 let toastT;
 function toast(msg, action){
   const t = $('#toast'), b = $('#toast-act');
-  $('#toast-msg').textContent = msg;
-  b.hidden = !action; b.onclick = null;
+  $('#toast-msg').textContent = msg; b.hidden = !action; t.classList.toggle('plain', !action); b.onclick = null;
   if (action){ b.textContent = action.label || 'Undo'; b.onclick = () => { action.run(); t.classList.remove('show'); }; }
-  t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), action ? 4500 : 2000);
+  t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), action ? 5000 : 2200);
 }
+const I = (p, s = 22, w = 1.9) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICON = {
-  heart: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg>',
-  up: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 11v9H4v-9h3Zm0 0 4-8a2 2 0 0 1 2 2v4h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"/></svg>',
-  down: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 13V4H4v9h3Zm0 0 4 8a2 2 0 0 0 2-2v-4h5.5a2 2 0 0 0 2-2.3l-1.2-7A2 2 0 0 0 17.3 4H7"/></svg>',
-  back: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>',
-  trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
-  search: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
-  grid: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>',
-  clock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
-  close: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+  pot: I('<path d="M3.5 11h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 7.5c0-1.5 1-2 1-3.5M14 7.5c0-1.5 1-2 1-3.5"/>'),
+  basket: I('<path d="M3 10h18"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'),
+  heart: I('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>', 18, 2),
+  heartNav: I('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>'),
+  user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'),
+  up: I('<path d="M7 11v9H4v-9h3Zm0 0 4-8a2 2 0 0 1 2 2v4h5.5a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.3 20H7"/>', 18, 2),
+  down: I('<path d="M7 13V4H4v9h3Zm0 0 4 8a2 2 0 0 0 2-2v-4h5.5a2 2 0 0 0 2-2.3l-1.2-7A2 2 0 0 0 17.3 4H7"/>', 18, 2),
+  shuffle: I('<path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>', 18, 2),
+  search: I('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>', 20, 2),
+  plus: I('<path d="M12 5v14M5 12h14"/>', 20, 2.4),
+  trash: I('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>', 19),
+  close: I('<path d="M6 6l12 12M18 6 6 18"/>', 20, 2.2),
+  clock: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', 15, 2.2),
+  check: I('<path d="m5 12 5 5 9-10"/>', 15, 2.6),
+  sun: I('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  bowl: I('<path d="M3 11h18a9 9 0 0 1-18 0Z"/><path d="M7 7c1-1 2.5-1 3.5 0M13.5 7c1-1 2.5-1 3.5 0"/>')
 };
-function badges(){ if (!DB.currentUser()) return; $('#b-kitchen').textContent = DB.ingredients().length || ''; $('#b-fav').textContent = DB.favourites().length || ''; }
-function navState(r){ $('#nav-kitchen').classList.toggle('on', r === 'kitchen'); $('#nav-fav').classList.toggle('on', r === 'favourites'); $('#nav-settings').classList.toggle('on', r === 'settings'); }
-function greeting(){ const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'; }
-function fmtQty(i){ return i.quantity != null ? `${+i.quantity} ${i.unit}` : ''; }
+const LOGO = `<span class="logo-mark">${I('<path d="M3.5 11h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 7.5c0-1.5 1-2 1-3.5M14 7.5c0-1.5 1-2 1-3.5"/>', 22, 2)}</span>`;
 
 /* =========================================================
-   AUTH — separate sign up and log in
+   SHELL
    ========================================================= */
-function authShell(inner){ $('#top').hidden = true; view.innerHTML = `<section class="auth"><div class="auth-box">
-  <div class="logo"><span class="logo-mark" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.5 11h17a8.5 8.5 0 0 1-17 0Z"/><path d="M9 7.5c0-1.5 1-2 1-3.5M14 7.5c0-1.5 1-2 1-3.5"/></svg></span><b>Rasoi</b></div>${inner}</div></section>`; }
-function pwField(id, label, auto){ return `<div class="field"><label for="${id}">${label}</label><div class="pw"><input class="input" id="${id}" type="password" autocomplete="${auto}" required minlength="8"><button type="button" data-showpw="${id}" aria-label="Show password">Show</button></div></div>`; }
-function bindPw(){ view.querySelectorAll('[data-showpw]').forEach(b => b.addEventListener('click', () => { const i = $('#' + b.dataset.showpw); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); })); }
+function shell(route){
+  const nIng = DB.ingredients().length, nFav = DB.favourites().length;
+  const tab = (r, href, icon, label, badge) => `<a href="${href}" ${route === r ? 'aria-current="page"' : ''}><span class="ic">${icon}</span><span>${label}</span>${badge !== undefined ? `<span class="badge ${r === 'saved' ? 'fav' : ''}" id="b-${r}">${badge || ''}</span>` : ''}</a>`;
+  $('#app').innerHTML = `
+    <nav class="nav" aria-label="Main">
+      <div class="brand">${LOGO}<b>Rasoi</b></div>
+      ${tab('cook', '#/', ICON.pot, 'Cook')}
+      ${tab('kitchen', '#/kitchen', ICON.basket, 'Kitchen', nIng)}
+      ${tab('saved', '#/saved', ICON.heartNav, 'Saved', nFav)}
+      ${tab('profile', '#/profile', ICON.user, 'Profile')}
+    </nav>
+    <main class="main" id="view"></main>`;
+}
+function badges(){ const k = $('#b-kitchen'), s = $('#b-saved'); if (k) k.textContent = DB.ingredients().length || ''; if (s) s.textContent = DB.favourites().length || ''; }
+const view = () => $('#view');
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+function authShell(inner){ $('#app').innerHTML = `<section class="auth"><div class="auth-box"><div class="brand">${LOGO}<b>Rasoi</b></div>${inner}</div></section>`; }
+const pwField = (id, label, auto) => `<div class="field"><label for="${id}">${label}</label><div class="pw"><input class="input" id="${id}" type="password" autocomplete="${auto}" required minlength="8"><button type="button" data-showpw="${id}" aria-label="Show password">Show</button></div></div>`;
+function bindPw(){ document.querySelectorAll('[data-showpw]').forEach(b => b.addEventListener('click', () => { const i = $('#' + b.dataset.showpw); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); })); }
 
 function renderSignup(){
-  authShell(`<div class="stack" style="gap:8px"><h1>Create your account</h1><p class="muted">Tell Rasoi what's in your kitchen and it suggests what to cook, using only what you have.</p></div>
+  authShell(`<div class="stack" style="gap:8px"><h1>Never wonder what to cook again</h1><p class="muted">Tell Rasoi what's in your kitchen. It suggests breakfast and lunch using only what you have.</p></div>
   <form class="card stack" id="f" novalidate>
     <div class="field"><label for="su-name">Your name</label><input class="input" id="su-name" autocomplete="given-name" required placeholder="Shubham"></div>
-    <div class="field"><label for="su-email">Email</label><input class="input" id="su-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+    <div class="field"><label for="su-email">Email</label><input class="input" id="su-email" type="email" autocomplete="email" inputmode="email" required placeholder="you@example.com"></div>
     ${pwField('su-pw', 'Password', 'new-password')}
     <div class="meter" aria-hidden="true"><i id="meter"></i></div><p class="tiny muted" id="meter-text" style="margin-top:-8px">At least 8 characters.</p>
-    ${pwField('su-pw2', 'Confirm password', 'new-password')}
     <p class="err-text" id="err" role="alert" hidden></p>
     <button class="btn leaf big block" type="submit">Create account</button>
   </form>
@@ -513,17 +544,16 @@ function renderSignup(){
   });
   $('#f').addEventListener('submit', async e => {
     e.preventDefault(); const err = $('#err');
-    const name = $('#su-name').value.trim(), email = $('#su-email').value.trim(), pw = $('#su-pw').value, pw2 = $('#su-pw2').value;
+    const name = $('#su-name').value.trim(), email = $('#su-email').value.trim(), pw = $('#su-pw').value;
     const fail = m => { err.textContent = m; err.hidden = false; };
     if (!name) return fail('Enter your name.');
     if (!/^\S+@\S+\.\S+$/.test(email)) return fail('Enter a valid email address.');
     if (pw.length < 8) return fail('Use a password of at least 8 characters.');
-    if (pw !== pw2) return fail("The two passwords don't match.");
-    const btn = e.submitter || $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Creating account…';
+    const btn = $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Creating account…';
     try {
       const r = await DB.signUp(name, email, pw);
       if (r.confirm) return renderCheckEmail(email);
-      location.hash = '#/'; route(); toast(`Welcome to Rasoi, ${name}`);
+      location.hash = '#/welcome';
     } catch(x){
       btn.disabled = false; btn.textContent = 'Create account';
       if (x.message === 'exists'){ err.innerHTML = 'An account with this email already exists. <a href="#/login">Log in instead</a>.'; err.hidden = false; }
@@ -534,7 +564,7 @@ function renderSignup(){
 function renderLogin(){
   authShell(`<div class="stack" style="gap:8px"><h1>Welcome back</h1><p class="muted">Log in to see your kitchen and today's suggestion.</p></div>
   <form class="card stack" id="f" novalidate>
-    <div class="field"><label for="li-email">Email</label><input class="input" id="li-email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+    <div class="field"><label for="li-email">Email</label><input class="input" id="li-email" type="email" autocomplete="email" inputmode="email" required placeholder="you@example.com"></div>
     ${pwField('li-pw', 'Password', 'current-password')}
     <p class="err-text" id="err" role="alert" hidden></p>
     <button class="btn leaf big block" type="submit">Log in</button>
@@ -544,23 +574,20 @@ function renderLogin(){
   bindPw();
   $('#forgot').addEventListener('click', async () => {
     const email = $('#li-email').value.trim(); const err = $('#err');
-    if (!/^\S+@\S+\.\S+$/.test(email)){ err.textContent = 'Enter your email above first, then tap Forgot password.'; err.hidden = false; return; }
+    if (!/^\S+@\S+\.\S+$/.test(email)){ err.textContent = 'Enter your email above, then tap Forgot password.'; err.hidden = false; $('#li-email').focus(); return; }
     try { await DB.resetPassword(email); err.hidden = true; toast('Check your email for a link to reset your password'); }
     catch(x){ err.textContent = /rate/i.test(x.message) ? 'Too many emails sent. Wait a few minutes and try again.' : x.message; err.hidden = false; }
   });
   $('#f').addEventListener('submit', async e => {
     e.preventDefault(); const err = $('#err'); const btn = $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Logging in…';
-    try { await DB.logIn($('#li-email').value.trim(), $('#li-pw').value); location.hash = '#/'; route(); }
+    try { await DB.logIn($('#li-email').value.trim(), $('#li-pw').value); location.hash = DB.ingredients().length ? '#/' : '#/welcome'; route(); }
     catch(x){ btn.disabled = false; btn.textContent = 'Log in'; err.hidden = false;
       err.innerHTML = x.message === 'invalid' ? 'Email or password is incorrect. New here? <a href="#/signup">Create an account</a>.' : x.message === 'unconfirmed' ? 'Confirm your email first. Check your inbox for the link we sent.' : 'Something went wrong. Try again.'; }
   });
 }
-function renderCheckEmail(email){
-  authShell(`<div class="card stack"><h1>Check your email</h1><p>We sent a confirmation link to <b>${esc(email)}</b>. Open it on this device, then come back and log in.</p><a class="btn leaf block" href="#/login">Go to log in</a></div>`);
-}
+function renderCheckEmail(email){ authShell(`<div class="card stack"><h1>Check your email</h1><p>We sent a confirmation link to <b>${esc(email)}</b>. Open it on this device, then come back and log in.</p><a class="btn leaf block" href="#/login">Go to log in</a></div>`); }
 function renderNewPassword(){
-  authShell(`<div class="stack" style="gap:8px"><h1>Set a new password</h1></div>
-  <form class="card stack" id="f" novalidate>${pwField('np-pw', 'New password', 'new-password')}<p class="err-text" id="err" role="alert" hidden></p><button class="btn leaf big block" type="submit">Save password</button></form>`);
+  authShell(`<h1>Set a new password</h1><form class="card stack" id="f" novalidate>${pwField('np-pw', 'New password', 'new-password')}<p class="err-text" id="err" role="alert" hidden></p><button class="btn leaf big block" type="submit">Save password</button></form>`);
   bindPw();
   $('#f').addEventListener('submit', async e => { e.preventDefault(); const pw = $('#np-pw').value; const err = $('#err');
     if (pw.length < 8){ err.textContent = 'Use at least 8 characters.'; err.hidden = false; return; }
@@ -568,316 +595,372 @@ function renderNewPassword(){
 }
 
 /* =========================================================
-   ADD PANEL — search + browse. Used on Home and My Kitchen.
+   WELCOME — 3 steps: preference, stock kitchen, first suggestion
    ========================================================= */
-function addPanelHTML(p){
-  return `<div class="combo" id="${p}-combo">
-    <label class="sr" for="${p}-q">Search ingredients</label>
-    <span class="combo-icon">${ICON.search}</span>
-    <input class="input combo-input" id="${p}-q" role="combobox" aria-expanded="false" aria-controls="${p}-list" aria-autocomplete="list" autocomplete="off" placeholder="Search ${ING.length} ingredients, e.g. pyaz, dahi">
-    <ul class="combo-list" id="${p}-list" role="listbox" hidden></ul>
-  </div>
-  <div id="${p}-picked"></div>
-  <div class="or-row">or pick from the list</div>
-  <div class="browse-row">
-    <button class="btn" type="button" data-browse="Popular">${ICON.grid} Browse all</button>
-    <button class="btn soft" type="button" data-pack="0">+ Everyday basics</button>
-  </div>`;
-}
-function bindAddPanel(p, onChange){
-  const q = $(`#${p}-q`), list = $(`#${p}-list`), picked = $(`#${p}-picked`);
-  let results = [], active = -1;
-  const close = () => { list.hidden = true; q.setAttribute('aria-expanded', 'false'); active = -1; };
-  const hl = (name, query) => { const i = name.toLowerCase().indexOf(query.toLowerCase()); return i < 0 ? esc(name) : esc(name.slice(0, i)) + '<mark>' + esc(name.slice(i, i + query.length)) + '</mark>' + esc(name.slice(i + query.length)); };
-  function draw(){
-    const v = q.value.trim(); if (!v){ close(); return; }
-    results = searchIngredients(v).slice(0, 40);
-    const exact = results.some(r => r.i.name.toLowerCase() === v.toLowerCase() || r.i.aliases.some(a => a.toLowerCase() === v.toLowerCase()));
-    let html = results.map((r, n) => `<li class="opt" role="option" id="${p}-o${n}" data-n="${n}" aria-selected="${n === active}">
-      <div class="o-main"><div class="o-name">${hl(r.i.name, v)}</div><div class="o-sub">${r.via ? esc(r.via) + ' · ' : ''}${esc(r.i.category)}</div></div>
-      ${DB.has(r.i.name) ? '<span class="o-have">In kitchen</span>' : ''}</li>`).join('');
-    if (!exact) html += `<li class="opt custom" role="option" id="${p}-o${results.length}" data-n="${results.length}" aria-selected="${active === results.length}"><div class="o-main"><div class="o-name">+ Add “${esc(v)}”</div><div class="o-sub">Not in our list · added as your own item</div></div></li>`;
-    list.innerHTML = html || `<li class="combo-empty">No matches.</li>`;
-    list.hidden = false; q.setAttribute('aria-expanded', 'true');
-    list.querySelectorAll('.opt').forEach(o => { o.addEventListener('mousedown', e => e.preventDefault()); o.addEventListener('click', () => choose(Number(o.dataset.n))); });
+let wStep = 1;
+function renderWelcome(){
+  const u = DB.currentUser(); const n = DB.ingredients().length;
+  const dots = `<div class="dots" aria-label="Step ${wStep} of 3">${[1,2,3].map(i => `<i class="${i <= wStep ? 'on' : ''}"></i>`).join('')}</div>`;
+  let body = '', foot = '';
+  if (wStep === 1){
+    body = `<div class="stack"><p class="label">Step 1 of 3</p><h1>Hi ${esc(u.name)}. What do you eat?</h1><p class="muted">Suggestions never include anything outside this. You can change it later.</p></div>
+      <div class="diet" role="group" aria-label="Food preference">${[['veg','Vegetarian','No egg, meat or fish'],['egg','Eggetarian','Vegetarian plus eggs'],['nonveg','Non-vegetarian','Anything goes']].map(([k, t, d]) => `<button type="button" data-diet="${k}" aria-pressed="${u.diet === k}"><b>${t}</b><span class="small muted">${d}</span></button>`).join('')}</div>`;
+    foot = `<button class="btn ghost" data-skip>Skip</button><span class="spacer"></span><button class="btn leaf" data-next>Continue</button>`;
+  } else if (wStep === 2){
+    body = `<div class="stack"><p class="label">Step 2 of 3</p><h1>What's in your kitchen?</h1><p class="muted">Tap what you have. Every ingredient unlocks more dishes. Quantities are optional and can be added later.</p></div>
+      <div id="w-picker"></div>`;
+    foot = `<span class="small muted" id="w-count"><b style="color:var(--ink)">${n}</b> added</span><span class="spacer"></span><button class="btn leaf" data-next ${n < 2 ? 'disabled' : ''}>${n < 2 ? 'Add at least 2' : 'Continue'}</button>`;
+  } else {
+    body = `<div class="stack"><p class="label">Step 3 of 3</p><h1>You're set.</h1><p class="muted">${n} ingredients in your kitchen, plus staples like salt, oil and haldi. Rasoi suggests dishes that use only these.</p></div>
+      <div class="card stack"><b>Good to know</b><p class="small muted">Suggestions take 5 to 15 seconds while the AI checks every ingredient. Tap <b>Show another</b> on a dish to swap it instantly, and the heart to save it.</p></div>`;
+    foot = `<span class="spacer"></span><button class="btn leaf big" data-first>Suggest my first meal</button>`;
   }
-  function choose(n){
-    const v = q.value.trim(); const item = n < results.length ? results[n].i : {name: v.replace(/^./, c => c.toUpperCase()), category: 'Others', allowed_units: CUSTOM_UNITS, default_unit: 'pcs', custom: true};
-    close(); q.value = ''; showPicked(item);
+  $('#app').innerHTML = `<section class="welcome" style="padding-inline:16px"><div class="stack" style="gap:22px">${dots}${body}</div></section><div class="welcome-foot"><div>${foot}</div></div>`;
+  document.querySelectorAll('[data-diet]').forEach(b => b.addEventListener('click', () => { DB.updateProfile({diet: b.dataset.diet}); renderWelcome(); }));
+  const next = document.querySelector('[data-next]'); if (next) next.addEventListener('click', () => { wStep++; renderWelcome(); window.scrollTo(0, 0); });
+  const skip = document.querySelector('[data-skip]'); if (skip) skip.addEventListener('click', () => { wStep = 2; renderWelcome(); });
+  const first = document.querySelector('[data-first]'); if (first) first.addEventListener('click', () => { local.set('rasoi:onboarded:' + u.id, true); wStep = 1; location.hash = '#/'; setTimeout(suggest, 50); });
+  if (wStep === 2){
+    picker.mount($('#w-picker'), {inline: true, onChange: () => {
+      const k = DB.ingredients().length; $('#w-count').innerHTML = `<b style="color:var(--ink)">${k}</b> added`;
+      const b = document.querySelector('[data-next]'); b.disabled = k < 2; b.textContent = k < 2 ? 'Add at least 2' : 'Continue';
+    }});
   }
-  function showPicked(item){
-    const existing = DB.ingredients().find(i => i.name.toLowerCase() === item.name.toLowerCase());
-    let unit = existing ? existing.unit : item.default_unit; let qty = existing && existing.quantity != null ? existing.quantity : '';
-    const step = u => ({g: 50, kg: .5, ml: 100, L: .5, tsp: 1, tbsp: 1, pinch: 1}[u] || 1);
-    picked.innerHTML = `<div class="picked" role="group" aria-label="Add ${esc(item.name)}">
-      <div class="picked-top"><div><b>${esc(item.name)}</b><div class="tiny muted">${esc(item.category)}${existing ? ' · already in your kitchen' : ''}</div></div>
-        <button class="del" type="button" data-cancel aria-label="Cancel">${ICON.close}</button></div>
-      <div><span class="label">Quantity · optional</span>
-      <div class="qty-row" style="margin-top:8px">
-        <div class="stepper"><button type="button" data-step="-1" aria-label="Less">−</button><input type="number" inputmode="decimal" min="0" step="any" id="${p}-qty" value="${qty}" placeholder="–" aria-label="Quantity"><button type="button" data-step="1" aria-label="More">+</button></div>
-        <div class="units" role="group" aria-label="Unit">${item.allowed_units.map(u => `<button type="button" class="unit" data-unit="${u}" aria-pressed="${u === unit}">${u}</button>`).join('')}</div>
-      </div></div>
-      <button class="btn leaf block" type="button" data-confirm>${existing ? 'Update in kitchen' : 'Add to kitchen'}</button>
-    </div>`;
-    const qi = $(`#${p}-qty`);
-    picked.querySelectorAll('[data-unit]').forEach(b => b.addEventListener('click', () => { unit = b.dataset.unit; picked.querySelectorAll('[data-unit]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
-    picked.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => { const s = step(unit) * Number(b.dataset.step); const nv = Math.max(0, (Number(qi.value) || 0) + s); qi.value = nv ? +nv.toFixed(2) : ''; }));
-    picked.querySelector('[data-cancel]').addEventListener('click', () => { picked.innerHTML = ''; q.focus(); });
-    const confirm = () => {
-      const {row, updated} = DB.addIngredient(item.name, qi.value, unit);
-      picked.innerHTML = ''; badges(); onChange();
-      toast(`${updated ? 'Updated' : 'Added'} ${row.name}${row.quantity != null ? ' · ' + fmtQty(row) : ''}`, updated ? null : {run: () => { DB.removeIngredient(row.id); badges(); onChange(); }});
-      const nq = $(`#${p}-q`); if (nq) nq.focus();
-    };
-    picked.querySelector('[data-confirm]').addEventListener('click', confirm);
-    qi.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); confirm(); } });
-    qi.focus();
-  }
-  q.addEventListener('input', () => { active = -1; draw(); });
-  q.addEventListener('focus', () => { if (q.value.trim()) draw(); });
-  q.addEventListener('blur', () => setTimeout(close, 120));
-  q.addEventListener('keydown', e => {
-    const total = list.querySelectorAll('.opt').length;
-    if (e.key === 'ArrowDown'){ e.preventDefault(); if (list.hidden) draw(); active = Math.min(total - 1, active + 1); }
-    else if (e.key === 'ArrowUp'){ e.preventDefault(); active = Math.max(0, active - 1); }
-    else if (e.key === 'Enter'){ e.preventDefault(); if (total) choose(active >= 0 ? active : 0); return; }
-    else if (e.key === 'Escape'){ close(); return; } else return;
-    list.querySelectorAll('.opt').forEach((o, n) => o.setAttribute('aria-selected', n === active));
-    const el = $(`#${p}-o${active}`); if (el){ el.scrollIntoView({block: 'nearest'}); q.setAttribute('aria-activedescendant', el.id); }
-  });
-  view.querySelectorAll(`[data-browse]`).forEach(b => b.addEventListener('click', () => openBrowse(b.dataset.browse, onChange)));
-  view.querySelectorAll(`[data-pack]`).forEach(b => b.addEventListener('click', () => addPack(PACKS[Number(b.dataset.pack)], onChange)));
 }
-function addPack(pack, onChange){
-  const added = pack.items.filter(n => !DB.has(n)).map(n => DB.addIngredient(n, '', ING_BY_NAME[n.toLowerCase()].default_unit).row);
-  badges(); onChange && onChange();
-  if (!added.length) return toast(`You already have all of ${pack.name.toLowerCase()}`);
-  toast(`Added ${added.length} item${added.length > 1 ? 's' : ''} from ${pack.name.toLowerCase()}`, {run: () => { added.forEach(r => DB.removeIngredient(r.id)); badges(); onChange && onChange(); if (!$('#sheet').hidden) drawSheet(); }});
-}
-
-/* ---------- Browse sheet (bottom sheet on phone, modal on tablet) ---------- */
-const sheetState = {tab: 'Popular', filter: '', onChange: null, lastFocus: null};
-function openBrowse(tab, onChange){
-  sheetState.tab = tab; sheetState.filter = ''; sheetState.onChange = onChange; sheetState.lastFocus = document.activeElement;
-  const sh = $('#sheet'), sc = $('#scrim'); sh.hidden = false; sc.hidden = false;
-  drawSheet(); requestAnimationFrame(() => { sh.classList.add('show'); sc.classList.add('show'); });
-  document.body.style.overflow = 'hidden'; document.body.classList.add('sheet-open'); setTimeout(() => $('#sheet-close').focus(), 50);
-}
-function closeBrowse(){
-  const sh = $('#sheet'), sc = $('#scrim'); sh.classList.remove('show'); sc.classList.remove('show'); document.body.style.overflow = ''; document.body.classList.remove('sheet-open');
-  setTimeout(() => { sh.hidden = true; sc.hidden = true; }, reduce ? 0 : 230);
-  if (sheetState.onChange) sheetState.onChange(); if (sheetState.lastFocus) sheetState.lastFocus.focus();
-}
-function drawSheet(){
-  const sh = $('#sheet'); const have = new Set(DB.ingredients().map(i => i.name.toLowerCase()));
-  const tabs = ['Popular', ...CATEGORIES];
-  const items = sheetState.filter ? searchIngredients(sheetState.filter).map(r => r.i)
-    : sheetState.tab === 'Popular' ? POPULAR.map(n => ING_BY_NAME[n.toLowerCase()]) : ING.filter(i => i.category === sheetState.tab);
-  const count = c => c === 'Popular' ? POPULAR.filter(n => have.has(n.toLowerCase())).length : ING.filter(i => i.category === c && have.has(i.name.toLowerCase())).length;
-  sh.innerHTML = `<div class="grab" aria-hidden="true"></div>
-  <div class="sheet-head">
-    <div class="sheet-title"><div><h2 id="sheet-title">Add from the list</h2><p class="tiny muted">Tap to add, tap again to remove. Set quantities later in My kitchen.</p></div>
-      <button class="del" type="button" id="sheet-close" aria-label="Close">${ICON.close}</button></div>
-    <div class="combo"><span class="combo-icon">${ICON.search}</span><input class="input combo-input" id="sheet-q" placeholder="Filter, e.g. dal, masala, kela" value="${esc(sheetState.filter)}" aria-label="Filter ingredients"></div>
-    ${sheetState.filter ? '' : `<div class="tabs" role="tablist" aria-label="Categories">${tabs.map(t => { const n = count(t); return `<button class="tab" role="tab" aria-selected="${t === sheetState.tab}" data-tab="${esc(t)}">${esc(t)}${n ? `<span class="n">${n}</span>` : ''}</button>`; }).join('')}</div>`}
-  </div>
-  <div class="sheet-body">
-    ${!sheetState.filter && sheetState.tab === 'Popular' ? PACKS.map((pk, n) => { const missing = pk.items.filter(x => !have.has(x.toLowerCase())).length; return `<div class="pack"><div><b>${pk.name}</b><div class="tiny muted">${pk.items.join(', ')}</div></div><button class="btn ${missing ? 'solid' : ''}" type="button" data-pk="${n}" ${missing ? '' : 'disabled'}>${missing ? `Add ${missing}` : 'All added'}</button></div>`; }).join('') : ''}
-    ${items.length ? `<div class="tiles">${items.map(i => { const on = have.has(i.name.toLowerCase()); return `<button type="button" class="tile" data-tile="${esc(i.name)}" aria-pressed="${on}"><span class="t-name">${esc(i.name)}</span>${i.aliases[0] ? `<span class="t-alias">${esc(i.aliases[0])}</span>` : ''}<span class="t-mark" aria-hidden="true">${on ? '✓' : '+'}</span></button>`; }).join('')}</div>` : `<p class="muted">Nothing matches “${esc(sheetState.filter)}”. Close this and type it in the search box to add it as your own item.</p>`}
-  </div>
-  <div class="sheet-foot"><span class="small muted"><b style="color:var(--ink)">${have.size}</b> in your kitchen</span><button class="btn leaf" type="button" id="sheet-done">Done</button></div>`;
-  $('#sheet-close').addEventListener('click', closeBrowse); $('#sheet-done').addEventListener('click', closeBrowse);
-  const f = $('#sheet-q'); f.addEventListener('input', () => { sheetState.filter = f.value; drawSheet(); const nf = $('#sheet-q'); nf.focus(); nf.setSelectionRange(nf.value.length, nf.value.length); });
-  sh.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { sheetState.tab = b.dataset.tab; drawSheet(); const a = sh.querySelector('.tab[aria-selected="true"]'); if (a) a.scrollIntoView({inline: 'center', block: 'nearest'}); }));
-  sh.querySelectorAll('[data-pk]').forEach(b => b.addEventListener('click', () => { addPack(PACKS[Number(b.dataset.pk)], null); drawSheet(); }));
-  sh.querySelectorAll('[data-tile]').forEach(b => b.addEventListener('click', () => {
-    const n = b.dataset.tile;
-    if (DB.has(n)){ const row = DB.removeByName(n); toast(`Removed ${n}`, {run: () => { DB.restoreIngredient(row); badges(); drawSheet(); }}); }
-    else { DB.addIngredient(n, '', ING_BY_NAME[n.toLowerCase()].default_unit); toast(`Added ${n}`); }
-    badges(); const on = DB.has(n); b.setAttribute('aria-pressed', on); b.querySelector('.t-mark').textContent = on ? '✓' : '+';
-    sh.querySelector('.sheet-foot b').textContent = DB.ingredients().length;
-  }));
-}
-$('#scrim').addEventListener('click', closeBrowse);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeBrowse(); });
 
 /* =========================================================
-   HOME
+   PICKER — one component for adding ingredients:
+   search with optional quantity, or browse category tiles.
+   Used inside the Add sheet and on the welcome screen.
    ========================================================= */
-function renderHome(){
+const picker = {
+  el: null, opts: {}, q: '', tab: 'Popular', open: null,
+  mount(el, opts){ this.el = el; this.opts = opts || {}; this.q = ''; this.tab = 'Popular'; this.open = null; this.draw(); },
+  changed(){ badges(); if (this.opts.onChange) this.opts.onChange(); },
+  draw(focus){
+    const have = new Set(DB.ingredients().map(i => i.name.toLowerCase()));
+    const count = c => c === 'Popular' ? POPULAR.filter(n => have.has(n.toLowerCase())).length : ING.filter(i => i.category === c && have.has(i.name.toLowerCase())).length;
+    const searchBox = `<div class="search"><span class="s-ic">${ICON.search}</span><input class="input" id="pk-q" type="search" placeholder="Search ${ING.length} ingredients, e.g. pyaz, dahi" value="${esc(this.q)}" autocomplete="off" aria-label="Search ingredients" enterkeyhint="search"></div>`;
+    let body;
+    if (this.q.trim()){
+      const res = searchIngredients(this.q).slice(0, 40);
+      const exact = res.some(r => r.i.name.toLowerCase() === this.q.trim().toLowerCase() || r.i.aliases.some(a => a.toLowerCase() === this.q.trim().toLowerCase()));
+      const hl = n => { const i = n.toLowerCase().indexOf(this.q.trim().toLowerCase()); return i < 0 ? esc(n) : esc(n.slice(0, i)) + '<mark>' + esc(n.slice(i, i + this.q.trim().length)) + '</mark>' + esc(n.slice(i + this.q.trim().length)); };
+      const items = res.map(r => r.i);
+      if (!exact) items.push({name: this.q.trim().replace(/^./, c => c.toUpperCase()), category: 'Others', allowed_units: CUSTOM_UNITS, default_unit: 'pcs', aliases: [], custom: true});
+      body = `<ul class="res" role="list">${items.map((it, n) => {
+        const inK = have.has(it.name.toLowerCase()); const isOpen = this.open === it.name; const via = (res[n] && res[n].via) || '';
+        return `<li class="res-item ${isOpen ? 'open' : ''}"><button type="button" class="res-btn" data-pick="${esc(it.name)}" aria-expanded="${isOpen}">
+          <span style="flex:1; min-width:0"><span class="rn">${it.custom ? '+ Add “' + esc(it.name) + '”' : hl(it.name)}</span><br><span class="rs">${it.custom ? 'Not in our list · added as your own item' : (via ? esc(via) + ' · ' : '') + esc(it.category)}</span></span>
+          ${inK ? '<span class="have">In kitchen</span>' : ''}</button>
+          ${isOpen ? this.qtyPanel(it) : ''}</li>`; }).join('')}</ul>`;
+    } else {
+      const tabs = ['Popular', ...CATEGORIES];
+      const items = this.tab === 'Popular' ? POPULAR.map(n => ING_BY_NAME[n.toLowerCase()]) : ING.filter(i => i.category === this.tab);
+      body = `<div class="hscroll" role="tablist" aria-label="Categories" style="margin-bottom:14px">${tabs.map(t => { const n = count(t); return `<button class="tab" role="tab" aria-selected="${t === this.tab}" data-tab="${esc(t)}">${esc(t)}${n ? `<span class="n">${n}</span>` : ''}</button>`; }).join('')}</div>
+        ${this.tab === 'Popular' ? PACKS.map((pk, n) => { const miss = pk.items.filter(x => !have.has(x.toLowerCase())).length; return `<div class="pack"><div><b>${pk.name}</b><div class="tiny muted">${pk.items.join(', ')}</div></div><button class="btn sm ${miss ? 'solid' : ''}" type="button" data-pk="${n}" ${miss ? '' : 'disabled'}>${miss ? `Add ${miss}` : 'All added'}</button></div>`; }).join('') : ''}
+        <div class="tiles">${items.map(i => { const on = have.has(i.name.toLowerCase()); return `<button type="button" class="tile" data-tile="${esc(i.name)}" aria-pressed="${on}"><span class="t-n">${esc(i.name)}</span>${i.aliases[0] ? `<span class="t-a">${esc(i.aliases[0])}</span>` : ''}<span class="t-m" aria-hidden="true">${on ? '✓' : '+'}</span></button>`; }).join('')}</div>`;
+    }
+    this.el.innerHTML = `<div class="stack" style="gap:14px">${searchBox}<div id="pk-body">${body}</div></div>`;
+    const qi = $('#pk-q');
+    qi.addEventListener('input', () => { this.q = qi.value; this.open = null; this.draw(true); });
+    qi.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); const first = this.el.querySelector('[data-pick]'); if (first) first.click(); } });
+    if (focus){ const n = $('#pk-q'); n.focus(); n.setSelectionRange(n.value.length, n.value.length); }
+    this.el.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { this.tab = b.dataset.tab; this.draw(); const a = this.el.querySelector('.tab[aria-selected="true"]'); if (a) a.scrollIntoView({inline: 'center', block: 'nearest'}); }));
+    this.el.querySelectorAll('[data-pk]').forEach(b => b.addEventListener('click', () => addPack(PACKS[Number(b.dataset.pk)], () => { this.draw(); this.changed(); })));
+    this.el.querySelectorAll('[data-tile]').forEach(b => b.addEventListener('click', () => {
+      const n = b.dataset.tile;
+      if (DB.has(n)){ const row = DB.removeByName(n); toast(`Removed ${n}`, {run: () => { DB.restoreIngredient(row); this.draw(); this.changed(); }}); }
+      else { DB.addIngredient(n, '', ING_BY_NAME[n.toLowerCase()].default_unit); toast(`Added ${n}`); }
+      const on = DB.has(n); b.setAttribute('aria-pressed', on); b.querySelector('.t-m').textContent = on ? '✓' : '+';
+      this.changed();
+    }));
+    this.el.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => { this.open = this.open === b.dataset.pick ? null : b.dataset.pick; this.draw(); const qn = this.el.querySelector('.qty-panel input'); if (qn) qn.focus({preventScroll: true}); }));
+    const panel = this.el.querySelector('.qty-panel'); if (panel) this.bindQty(panel);
+  },
+  qtyPanel(it){
+    const ex = DB.ingredients().find(i => i.name.toLowerCase() === it.name.toLowerCase());
+    const unit = ex ? ex.unit : it.default_unit; const qty = ex && ex.quantity != null ? ex.quantity : '';
+    return `<div class="qty-panel" data-name="${esc(it.name)}" data-custom="${it.custom ? 1 : ''}">
+      <div class="stepper lg"><button type="button" data-step="-1" aria-label="Less">−</button><input type="number" inputmode="decimal" min="0" step="any" value="${qty}" placeholder="Qty" aria-label="Quantity (optional)"><button type="button" data-step="1" aria-label="More">+</button></div>
+      <div class="units" role="group" aria-label="Unit">${it.allowed_units.map(u => `<button type="button" class="unit" data-unit="${u}" aria-pressed="${u === unit}">${u}</button>`).join('')}</div>
+      <button class="btn leaf" type="button" data-add style="margin-left:auto">${ex ? 'Update' : 'Add'}</button></div>`;
+  },
+  bindQty(panel){
+    const name = panel.dataset.name; const qi = panel.querySelector('input'); let unit = panel.querySelector('[aria-pressed="true"]').dataset.unit;
+    const step = u => ({g: 50, kg: .5, ml: 100, L: .5, tsp: 1, tbsp: 1, pinch: 1}[u] || 1);
+    panel.querySelectorAll('[data-unit]').forEach(b => b.addEventListener('click', () => { unit = b.dataset.unit; panel.querySelectorAll('[data-unit]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+    panel.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => { const v = Math.max(0, (Number(qi.value) || 0) + step(unit) * Number(b.dataset.step)); qi.value = v ? +v.toFixed(2) : ''; }));
+    const add = () => {
+      const {row, updated} = DB.addIngredient(name, qi.value, unit);
+      toast(`${updated ? 'Updated' : 'Added'} ${row.name}${row.quantity != null ? ' · ' + fmtQty(row) : ''}`, updated ? null : {run: () => { DB.removeIngredient(row.id); this.draw(); this.changed(); }});
+      this.q = ''; this.open = null; this.draw(true); this.changed();
+    };
+    panel.querySelector('[data-add]').addEventListener('click', add);
+    qi.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); add(); } });
+  }
+};
+function addPack(pack, after){
+  const added = pack.items.filter(n => !DB.has(n)).map(n => DB.addIngredient(n, '', ING_BY_NAME[n.toLowerCase()].default_unit).row);
+  if (after) after();
+  if (!added.length) return toast(`You already have everything in ${pack.name.toLowerCase()}`);
+  toast(`Added ${added.length} from ${pack.name.toLowerCase()}`, {run: () => { added.forEach(r => DB.removeIngredient(r.id)); if (after) after(); }});
+}
+
+/* ---------- Add sheet ---------- */
+let sheetReturn = null;
+function openAdd(){
+  sheetReturn = document.activeElement;
+  const sh = $('#sheet'), sc = $('#scrim');
+  sh.innerHTML = `<div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head"><div class="row-flex"><div class="spacer"><h2 id="sheet-title">Add ingredients</h2></div><button class="icon-btn" type="button" id="sheet-x" aria-label="Close">${ICON.close}</button></div></div>
+    <div class="sheet-body" id="sheet-body"></div>
+    <div class="sheet-foot"><span class="small muted"><b style="color:var(--ink)" id="sheet-n">${DB.ingredients().length}</b> in your kitchen</span><span class="spacer"></span><button class="btn leaf" type="button" id="sheet-done">Done</button></div>`;
+  sh.hidden = false; sc.hidden = false; document.body.classList.add('sheet-open'); document.body.style.overflow = 'hidden';
+  picker.mount($('#sheet-body'), {onChange: () => { $('#sheet-n').textContent = DB.ingredients().length; }});
+  requestAnimationFrame(() => { sh.classList.add('show'); sc.classList.add('show'); });
+  $('#sheet-x').addEventListener('click', closeAdd); $('#sheet-done').addEventListener('click', closeAdd);
+  setTimeout(() => { if (innerWidth >= 768) $('#pk-q').focus(); else $('#sheet-x').focus(); }, 80);
+}
+function closeAdd(){
+  const sh = $('#sheet'), sc = $('#scrim'); if (sh.hidden) return;
+  sh.classList.remove('show'); sc.classList.remove('show'); document.body.classList.remove('sheet-open'); document.body.style.overflow = '';
+  setTimeout(() => { sh.hidden = true; sc.hidden = true; sh.innerHTML = ''; }, reduce ? 0 : 260);
+  route(true); if (sheetReturn && document.contains(sheetReturn)) sheetReturn.focus();
+}
+$('#scrim').addEventListener('click', closeAdd);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAdd(); });
+
+/* =========================================================
+   COOK
+   ========================================================= */
+function renderCook(){
   const u = DB.currentUser(); const ings = DB.ingredients();
-  if (!ui.result && !ui.loading){ const last = DB.lastSuggestion(); if (last && Date.now() - new Date(last.created_at) < 12 * 3600e3) ui.result = last; }
-  view.innerHTML = `
-  <section class="hello"><h1>${greeting()}, ${esc(u.name)}</h1><p class="muted">What's in your kitchen today?</p></section>
-  <div class="home-grid">
-    <div class="card">
-      <div class="card-head"><h2>Add ingredients</h2><a class="btn ghost small" href="#/kitchen" style="min-height:36px; padding:6px 10px">${ings.length} in kitchen →</a></div>
-      ${addPanelHTML('home')}
-      <div id="recent">${recentHTML()}</div>
-    </div>
-    <div class="col-right stack">
-      <div class="card stack">
-        <h2>What should I cook?</h2>
-        <div class="seg" role="group" aria-label="Meal">${['breakfast','lunch','both'].map(s => `<button type="button" data-slot="${s}" aria-pressed="${ui.slot === s}">${s[0].toUpperCase() + s.slice(1)}</button>`).join('')}</div>
-        <button class="btn leaf big block" id="suggest" ${ings.length < 2 || ui.loading ? 'disabled' : ''}>${ui.loading ? 'Checking your kitchen…' : 'Suggest food'}</button>
-        ${ings.length < 2 ? `<p class="small muted" style="text-align:center">Add at least ${2 - ings.length} more ingredient${ings.length === 1 ? '' : 's'} to get a suggestion.</p>` : `<p class="tiny muted" style="text-align:center">Uses only your ${ings.length} ingredients plus your staples.</p>`}
+  if (!ui.slot) ui.slot = defaultSlot();
+  if (!ui.result && !ui.loading){ const last = DB.lastSuggestion(); if (last && Date.now() - new Date(last.created_at) < 10 * 3600e3) ui.result = last; }
+  const preview = ings.slice(-6).reverse();
+  view().innerHTML = `<div class="page wide">
+    <header class="page-head"><div><h1>${greeting()}, ${esc(u.name)}</h1><p class="muted">Let's find something you can make right now.</p></div></header>
+    <div class="cook-grid">
+      <div class="left stack">
+        <section class="hero" aria-labelledby="cook-h">
+          <h2 id="cook-h">What should I cook?</h2>
+          <div class="seg" role="group" aria-label="Meal">${[['breakfast','Breakfast'],['lunch','Lunch'],['both','Both']].map(([k, l]) => `<button type="button" data-slot="${k}" aria-pressed="${ui.slot === k}">${l}</button>`).join('')}</div>
+          <button class="btn big block go" id="go" ${ings.length < 2 || ui.loading ? 'disabled' : ''}>${ui.loading ? 'Finding dishes…' : 'Suggest food'}</button>
+          <p class="hint">${ings.length < 2 ? `Add ${2 - ings.length} more ingredient${ings.length === 1 ? '' : 's'} to start.` : `Uses only your ${ings.length} ingredients and staples.`}</p>
+        </section>
+        <section class="card kit-card" aria-label="Your kitchen">
+          <div class="kit-top"><div class="kit-count">${ings.length}</div><div class="spacer"><b>in your kitchen</b><p class="small muted">${ings.length ? 'Keep it current for better ideas.' : 'Add what you have to get started.'}</p></div>
+            <button class="btn soft sm" type="button" data-add>${ICON.plus} Add</button></div>
+          ${preview.length ? `<div class="kit-preview">${preview.map(i => `<span class="chip">${esc(i.name)}</span>`).join('')}${ings.length > 6 ? `<a class="chip" href="#/kitchen" style="text-decoration:none">+${ings.length - 6} more</a>` : ''}</div>` : `<button class="btn block" type="button" data-pack0>+ Add everyday basics (10 items)</button>`}
+        </section>
       </div>
-      <div id="results" class="stack" aria-live="polite">${renderResults()}</div>
-    </div>
-  </div>`;
-  bindAddPanel('home', refreshHomeSide);
-  view.querySelectorAll('[data-slot]').forEach(b => b.addEventListener('click', () => { ui.slot = b.dataset.slot; view.querySelectorAll('[data-slot]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
-  $('#suggest').addEventListener('click', suggest);
-  bindResults(); bindRecent();
+      <section id="results" aria-live="polite">${resultsHTML()}</section>
+    </div></div>`;
+  view().querySelectorAll('[data-slot]').forEach(b => b.addEventListener('click', () => { ui.slot = b.dataset.slot; view().querySelectorAll('[data-slot]').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  $('#go').addEventListener('click', suggest);
+  view().querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', openAdd));
+  const p0 = view().querySelector('[data-pack0]'); if (p0) p0.addEventListener('click', () => addPack(PACKS[0], () => { badges(); renderCook(); }));
+  bindResults();
 }
-function recentHTML(){
-  const ings = DB.ingredients().slice(-8).reverse(); if (!ings.length) return '';
-  return `<div style="margin-top:18px"><span class="label">Recently added</span><div class="chips" style="margin-top:8px">${ings.map(i => `<span class="chip">${esc(i.name)}${i.quantity != null ? ` <span class="tiny muted">${esc(fmtQty(i))}</span>` : ''}<button class="x" data-rm="${i.id}" aria-label="Remove ${esc(i.name)}">×</button></span>`).join('')}</div></div>`;
-}
-function bindRecent(){ view.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => { const row = DB.removeIngredient(b.dataset.rm); badges(); refreshHomeSide(); toast(`Removed ${row.name}`, {run: () => { DB.restoreIngredient(row); badges(); refreshHomeSide(); }}); })); }
-function refreshHomeSide(){
-  if ((location.hash.replace(/^#\/?/, '') || 'home') !== 'home') return;
-  const n = DB.ingredients().length;
-  $('#recent').innerHTML = recentHTML(); bindRecent();
-  const s = $('#suggest'); s.disabled = n < 2 || ui.loading;
-  const hint = s.nextElementSibling; if (hint) hint.outerHTML = n < 2 ? `<p class="small muted" style="text-align:center">Add at least ${2 - n} more ingredient${n === 1 ? '' : 's'} to get a suggestion.</p>` : `<p class="tiny muted" style="text-align:center">Uses only your ${n} ingredients plus your staples.</p>`;
-  const kl = view.querySelector('.card-head .btn.ghost'); if (kl) kl.textContent = `${n} in kitchen →`;
-}
+const STAGES = ['Reading your kitchen', 'Thinking of dishes you can make', 'Checking every ingredient against your kitchen'];
+let stageTimers = [];
 async function suggest(){
-  const u = DB.currentUser(); ui.loading = true; ui.error = null; ui.result = null;
-  $('#suggest').disabled = true; $('#suggest').textContent = 'Checking your kitchen…'; drawResults();
-  if (innerWidth < 900) $('#results').scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+  if (ui.loading) return;
+  ui.loading = true; ui.error = null; ui.result = null; ui.stage = 0; ui.alts = {}; ui.downOpen = null;
+  if (location.hash.replace(/^#\/?/, '') !== '') { location.hash = '#/'; }
+  route(true);
+  stageTimers.forEach(clearTimeout);
+  stageTimers = [setTimeout(() => setStage(1), 900), setTimeout(() => setStage(2), 5000), setTimeout(() => setStage(3), 14000)];
+  if (innerWidth < 1100){ const r = $('#results'); if (r) r.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'}); }
   const avoid = DB.suggestions().slice(0, 6).flatMap(s => s.meals.map(m => m.dish));
   try {
-    const res = await AI.suggest({ingredients: DB.ingredients(), staples: u.staples, slot: ui.slot, diet: u.diet, avoid});
-    const rec = {id: uid(), slot: ui.slot, ingredients_snapshot: DB.ingredients().map(i => i.name), ...res, created_at: new Date().toISOString()};
-    if (rec._saved){ delete rec._saved; C.suggestions.unshift(rec); } else DB.saveSuggestion(rec);
-    ui.result = rec;
-    if (typeof ui.remaining === 'number' && ui.remaining <= 3) toast(ui.remaining ? `${ui.remaining} suggestion${ui.remaining === 1 ? '' : 's'} left today` : "That was today's last suggestion");
+    const data = await AI.suggest({slot: ui.slot, avoid});
+    const s = data.suggestion; ui.remaining = data.remaining_today;
+    s.meals.forEach(m => { ui.alts[m.id] = m.alternatives || []; delete m.alternatives; });
+    C.suggestions.unshift(s); ui.result = s;
   } catch(e){ ui.error = e.message || 'Something went wrong. Try again.'; }
-  ui.loading = false; const s = $('#suggest'); if (s){ s.disabled = DB.ingredients().length < 2; s.textContent = 'Suggest food'; } drawResults();
+  stageTimers.forEach(clearTimeout); ui.loading = false;
+  if ((location.hash.replace(/^#\/?/, '') || '') === '') route(true);
+  if (ui.remaining != null && ui.remaining <= 3) toast(ui.remaining ? `${ui.remaining} suggestion${ui.remaining === 1 ? '' : 's'} left today` : "That was today's last suggestion");
 }
-function drawResults(){ const r = $('#results'); if (r){ r.innerHTML = renderResults(); bindResults(); } }
-function renderResults(){
-  if (ui.loading) return [1, 2].map(() => `<div class="skel"><i style="width:28%"></i><i style="width:65%; height:20px"></i><i style="width:90%"></i><i style="width:50%"></i></div>`).join('');
-  if (ui.error) return `<div class="notice err"><b>That didn't work.</b><span>${esc(ui.error)}</span><div><button class="btn" data-retry>Try again</button></div></div>`;
+function setStage(n){ ui.stage = n; const r = $('#results'); if (r && ui.loading){ r.innerHTML = resultsHTML(); } }
+function resultsHTML(){
+  if (ui.loading){
+    const n = DB.ingredients().length;
+    return `<div class="card stack" style="gap:16px"><h2>Finding dishes for you</h2>
+      <div class="progress">${STAGES.map((s, i) => { const st = ui.stage > i ? 'done' : ui.stage === i ? 'now' : ''; return `<div class="step ${st}"><span class="dot">${st === 'done' ? ICON.check : ''}</span>${i === 0 ? `Reading your ${n} ingredients` : s}</div>`; }).join('')}</div>
+      <p class="small muted">${ui.stage >= 3 ? 'The AI is busy right now, so this is taking longer than usual. Hang on.' : 'Usually takes 5 to 15 seconds.'}</p>
+      <div class="stack" style="gap:10px"><div class="skel" style="width:40%"></div><div class="skel" style="width:85%"></div><div class="skel" style="width:60%"></div></div></div>`;
+  }
+  if (ui.error) return `<div class="notice err"><b>That didn't work.</b><span>${esc(ui.error)}</span><div><button class="btn sm" data-retry>Try again</button></div></div>`;
   const r = ui.result;
-  if (!r) return `<div class="placeholder"><b style="color:var(--ink)">Your suggestion appears here.</b><p class="small" style="margin-top:4px">Pick a meal and press Suggest food.</p></div>`;
+  if (!r) return `<div class="placeholder">${ICON.bowl}<b style="color:var(--ink)">Your suggestion appears here</b><p class="small">Pick a meal and tap Suggest food.</p></div>`;
   let html = '';
-  if (!r.possible) html += `<div class="notice warn"><b>${esc(r.reason)}</b>${r.nearest_dish ? `<span>You're closest to <b>${esc(r.nearest_dish)}</b>${(r.nearest_missing || []).length ? `, just missing <b>${esc(r.nearest_missing.join(' and '))}</b>` : ''}.</span>` : ''}${r.unlock ? `<span>Adding <b>${esc(r.unlock)}</b> would unlock the most dishes.</span><div><button class="btn solid" data-unlock="${esc(r.unlock)}">Add ${esc(r.unlock)} and try again</button></div>` : ''}</div>`;
-  html += r.meals.map(m => {
-    const fav = DB.isFavourite(m.id), rate = DB.rating(m.id);
-    return `<article class="meal">
-      <div class="meal-top"><div><span class="slot">${esc(m.slot)}</span><h3>${esc(m.dish)}</h3></div><span class="mins">${ICON.clock}${esc(m.minutes)} min</span></div>
-      <p class="why">${esc(m.why)}</p>
-      <div><span class="label">Uses from your kitchen</span><div class="chips" style="margin-top:6px">${m.uses.map(x => `<span class="chip use">${esc(x)}</span>`).join('')}</div></div>
-      <div class="meal-actions">
-        <button class="act heart" data-fav="${m.id}" aria-pressed="${fav}">${ICON.heart}${fav ? 'Saved' : 'Save'}</button>
-        <span class="spacer"></span>
-        <button class="act up" data-rate="${m.id}" data-v="1" aria-pressed="${rate === 1}" aria-label="Good suggestion">${ICON.up}</button>
-        <button class="act down" data-rate="${m.id}" data-v="-1" aria-pressed="${rate === -1}" aria-label="Not useful">${ICON.down}</button>
-      </div></article>`;
-  }).join('');
-  html += `<button class="btn block" data-again>Try another</button>`;
+  if (!r.possible){
+    const missing = (r.nearest_missing || []).filter(Boolean);
+    html += `<div class="notice warn"><b>${esc(r.reason || 'Not enough for a proper meal yet.')}</b>
+      ${r.nearest_dish ? `<span>You're closest to <b>${esc(r.nearest_dish)}</b>${missing.length ? `, just missing ${missing.map(m => `<b>${esc(m)}</b>`).join(' and ')}` : ''}.</span>` : ''}
+      ${r.unlock && !missing.includes(r.unlock) ? `<span>Adding <b>${esc(r.unlock)}</b> would unlock the most dishes.</span>` : ''}
+      <div class="chips">${[...missing, ...(r.unlock && !missing.includes(r.unlock) ? [r.unlock] : [])].map(m => `<button class="btn sm solid" data-addretry="${esc(m)}">+ ${esc(m)}</button>`).join('')}
+      ${missing.length > 1 ? `<button class="btn sm" data-addall="${esc(missing.join('|'))}">Add both and try again</button>` : ''}</div></div>`;
+  }
+  html += `<div class="results ${r.meals.length > 1 ? 'two' : ''}">${r.meals.map(mealHTML).join('')}</div>`;
+  html += `<div class="stack" style="gap:8px; margin-top:14px"><button class="btn block" data-again>${ICON.shuffle} Suggest something different</button>${ui.remaining != null ? `<p class="remaining">${ui.remaining} suggestion${ui.remaining === 1 ? '' : 's'} left today</p>` : ''}</div>`;
   return html;
 }
+function mealHTML(m){
+  const fav = DB.isFavourite(m.id), rate = DB.rating(m.id), alts = ui.alts[m.id] || [];
+  return `<article class="meal" data-meal="${m.id}">
+    <div class="meal-top"><span class="meal-ic ${m.slot}">${m.slot === 'breakfast' ? ICON.sun : ICON.bowl}</span>
+      <div style="flex:1; min-width:0"><span class="slot">${esc(m.slot)}</span><h3>${esc(m.dish)}</h3><span class="mins">${ICON.clock}${esc(m.minutes)} min</span></div></div>
+    <p class="why">${esc(m.why)}</p>
+    <div class="stack" style="gap:6px"><span class="grounded">${ICON.check} Everything is in your kitchen</span><div class="chips">${m.uses.map(x => `<span class="chip use">${esc(x)}</span>`).join('')}</div></div>
+    ${ui.downOpen === m.id ? `<div class="why-not"><b class="small">What was wrong?</b><div class="chips">${["I don't have something", "Don't like it", 'Takes too long', 'Had it recently'].map(x => `<button class="chip" data-reason="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>` : ''}
+    <div class="meal-actions">
+      <button class="act heart" data-fav aria-pressed="${fav}">${ICON.heart}${fav ? 'Saved' : 'Save'}</button>
+      <button class="act" data-swap>${ICON.shuffle}${alts.length ? 'Show another' : 'New idea'}</button>
+      <span class="spacer"></span>
+      <button class="act up" data-up aria-pressed="${rate === 1}" aria-label="Good suggestion">${ICON.up}</button>
+      <button class="act down" data-down aria-pressed="${rate === -1}" aria-label="Not useful">${ICON.down}</button>
+    </div></article>`;
+}
 function bindResults(){
+  const box = $('#results'); if (!box) return;
   const r = ui.result;
-  view.querySelectorAll('[data-fav]').forEach(b => b.addEventListener('click', () => { const m = r.meals.find(x => x.id === b.dataset.fav); const on = DB.toggleFavourite(m); toast(on ? `Saved ${m.dish} to favourites` : `Removed ${m.dish} from favourites`); badges(); drawResults(); }));
-  view.querySelectorAll('[data-rate]').forEach(b => b.addEventListener('click', () => { const m = r.meals.find(x => x.id === b.dataset.rate); const v = Number(b.dataset.v); const was = DB.rating(m.id); DB.rate(m, was === v ? 0 : v); if (was !== v) toast(v === 1 ? 'Thanks, noted' : 'Noted. Try another?'); drawResults(); }));
-  const again = view.querySelector('[data-again]'); if (again) again.addEventListener('click', suggest);
-  const retry = view.querySelector('[data-retry]'); if (retry) retry.addEventListener('click', suggest);
-  const unlock = view.querySelector('[data-unlock]'); if (unlock) unlock.addEventListener('click', () => { const n = unlock.dataset.unlock; DB.addIngredient(n, '', (ING_BY_NAME[n.toLowerCase()] || {}).default_unit); badges(); refreshHomeSide(); toast(`Added ${n}`); suggest(); });
+  const again = box.querySelector('[data-again]'); if (again) again.addEventListener('click', suggest);
+  const retry = box.querySelector('[data-retry]'); if (retry) retry.addEventListener('click', suggest);
+  box.querySelectorAll('[data-addretry]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.addretry; DB.addIngredient(n, '', (ING_BY_NAME[n.toLowerCase()] || {}).default_unit); badges(); toast(`Added ${n}`); suggest(); }));
+  box.querySelectorAll('[data-addall]').forEach(b => b.addEventListener('click', () => { b.dataset.addall.split('|').forEach(n => DB.addIngredient(n, '', (ING_BY_NAME[n.toLowerCase()] || {}).default_unit)); badges(); toast('Added'); suggest(); }));
+  if (!r) return;
+  box.querySelectorAll('[data-meal]').forEach(card => {
+    const idx = r.meals.findIndex(m => m.id === card.dataset.meal); const m = r.meals[idx];
+    const redraw = () => { card.outerHTML = mealHTML(r.meals[idx]); bindResults(); };
+    card.querySelector('[data-fav]').addEventListener('click', () => { const on = DB.toggleFavourite(m); badges(); toast(on ? `Saved ${m.dish}` : `Removed ${m.dish} from saved`); redraw(); });
+    card.querySelector('[data-up]').addEventListener('click', () => { const was = DB.rating(m.id); DB.rate(m, was === 1 ? 0 : 1); ui.downOpen = null; if (was !== 1) toast('Thanks. Noted.'); redraw(); });
+    card.querySelector('[data-down]').addEventListener('click', () => { const was = DB.rating(m.id); if (was === -1){ DB.rate(m, 0); ui.downOpen = null; } else { DB.rate(m, -1); ui.downOpen = m.id; } redraw(); });
+    card.querySelectorAll('[data-reason]').forEach(b => b.addEventListener('click', () => { DB.rate(m, -1, b.dataset.reason); ui.downOpen = null; toast('Thanks. That helps us improve.', ui.alts[m.id] && ui.alts[m.id].length ? {label: 'Show another', run: () => swap(idx)} : null); redraw(); }));
+    card.querySelector('[data-swap]').addEventListener('click', () => swap(idx));
+  });
+}
+async function swap(idx){
+  const r = ui.result; const cur = r.meals[idx]; const alts = ui.alts[cur.id] || [];
+  if (alts.length){
+    const next = alts.shift(); const m = {id: uid(), slot: cur.slot, dish: next.dish, minutes: next.minutes, uses: next.uses, why: next.why};
+    ui.alts[m.id] = [...alts, {dish: cur.dish, minutes: cur.minutes, uses: cur.uses, why: cur.why}].slice(0, 2);
+    r.meals[idx] = m; DB.addMealVariant(r.id, m); ui.downOpen = null;
+    const card = document.querySelector(`[data-meal="${cur.id}"]`); if (card){ card.outerHTML = mealHTML(m); bindResults(); }
+    return;
+  }
+  const keep = ui.slot; ui.slot = cur.slot; await suggest(); ui.slot = keep;
 }
 
 /* =========================================================
-   MY KITCHEN
+   KITCHEN
    ========================================================= */
 function renderKitchen(){
-  view.innerHTML = `<div class="narrow">
-  <div class="page-head"><a class="back" href="#/" aria-label="Back to home">${ICON.back}</a><div><h1>My kitchen</h1><p class="muted small" id="k-count"></p></div></div>
-  <div class="stack">
-    <div class="card"><h2 style="margin-bottom:14px">Add ingredients</h2>${addPanelHTML('kit')}</div>
-    <div id="k-list"></div>
-  </div></div>`;
-  bindAddPanel('kit', drawKitchenList);
-  drawKitchenList();
-}
-function drawKitchenList(){
-  const box = $('#k-list'); if (!box) return;
   const ings = DB.ingredients();
-  $('#k-count').textContent = `${ings.length} ingredient${ings.length === 1 ? '' : 's'} · quantities are optional`;
-  if (!ings.length){ box.innerHTML = `<div class="empty"><h2>Your kitchen is empty</h2><p>Search above or tap <b>Everyday basics</b> to add ten common items at once.</p></div>`; return; }
-  const cats = [...CATEGORIES, 'Others'];
-  const groups = cats.map(c => [c, ings.filter(i => i.category === c).sort((a, b) => a.name.localeCompare(b.name))]).filter(g => g[1].length);
-  box.innerHTML = `<div class="stack">${groups.map(([c, items]) => `<div><div class="group-h"><span class="label">${esc(c)}</span><span class="small muted">${items.length}</span></div>
-    <div class="rows">${items.map(i => { const meta = ING_BY_NAME[i.name.toLowerCase()]; const units = meta ? meta.allowed_units : CUSTOM_UNITS; return `<div class="row">
-      <span class="r-name">${esc(i.name)}${meta && meta.aliases[0] ? `<span class="r-sub">${esc(meta.aliases[0])}</span>` : ''}</span>
-      <span class="r-ctl"><input class="input r-qty" type="number" min="0" step="any" inputmode="decimal" placeholder="Qty" value="${i.quantity ?? ''}" data-qty="${i.id}" id="q-${i.id}" aria-label="Quantity of ${esc(i.name)}">
-      <select data-unit="${i.id}" id="u-${i.id}" aria-label="Unit for ${esc(i.name)}">${units.map(x => `<option ${x === i.unit ? 'selected' : ''}>${x}</option>`).join('')}</select></span>
-      <button class="del" data-del="${i.id}" aria-label="Remove ${esc(i.name)}">${ICON.trash}</button></div>`; }).join('')}</div></div>`).join('')}
-    <div id="clear-zone" style="text-align:center"><button class="btn ghost" id="clear-btn">Clear kitchen</button></div></div>`;
-  box.querySelectorAll('[data-qty]').forEach(inp => inp.addEventListener('change', () => { DB.updateIngredient(inp.dataset.qty, {quantity: inp.value === '' ? null : Number(inp.value)}); toast('Quantity saved'); }));
-  box.querySelectorAll('[data-unit]').forEach(sel => sel.addEventListener('change', () => { DB.updateIngredient(sel.dataset.unit, {unit: sel.value}); toast('Unit saved'); }));
-  box.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => { const row = DB.removeIngredient(b.dataset.del); badges(); drawKitchenList(); toast(`Removed ${row.name}`, {run: () => { DB.restoreIngredient(row); badges(); drawKitchenList(); }}); }));
-  $('#clear-btn').addEventListener('click', () => {
-    const all = DB.ingredients(); DB.setIngredients([]); badges(); drawKitchenList();
-    toast(`Cleared ${all.length} ingredients`, {run: () => { DB.setIngredients(all); badges(); drawKitchenList(); }});
+  view().innerHTML = `<div class="page">
+    <header class="page-head"><div><h1>My kitchen</h1><p class="muted">${ings.length} ingredient${ings.length === 1 ? '' : 's'} · quantities are optional</p></div>
+      <button class="btn leaf fab" type="button" data-add>${ICON.plus} Add</button></header>
+    ${ings.length ? `<div class="k-tools">
+      <div class="search"><span class="s-ic">${ICON.search}</span><input class="input" id="k-q" type="search" placeholder="Find in your kitchen" value="${esc(ui.kitFilter)}" aria-label="Find in your kitchen" autocomplete="off"></div>
+      <div class="hscroll" id="k-cats"></div></div><div id="k-list"></div>
+      <div style="text-align:center; margin-top:22px" id="clear-zone"><button class="btn ghost" id="clear">Clear kitchen</button></div>`
+    : `<div class="empty"><h2>Your kitchen is empty</h2><p>Add what you have. Every ingredient unlocks more dishes.</p><div class="chips" style="justify-content:center"><button class="btn leaf" data-add>${ICON.plus} Add ingredients</button><button class="btn" data-pack0>+ Everyday basics</button></div></div>`}
+  </div>`;
+  view().querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', openAdd));
+  const p0 = view().querySelector('[data-pack0]'); if (p0) p0.addEventListener('click', () => addPack(PACKS[0], () => { badges(); renderKitchen(); }));
+  if (!ings.length) return;
+  const q = $('#k-q'); q.addEventListener('input', () => { ui.kitFilter = q.value; drawKitchen(); });
+  $('#clear').addEventListener('click', () => { const all = DB.ingredients().slice(); DB.setIngredients([]); badges(); renderKitchen(); toast(`Cleared ${all.length} ingredients`, {run: () => { DB.setIngredients(all); badges(); renderKitchen(); }}); });
+  drawKitchen();
+}
+function drawKitchen(){
+  const ings = DB.ingredients(); const f = norm(ui.kitFilter);
+  const cats = [...CATEGORIES, 'Others'].filter(c => ings.some(i => i.category === c));
+  if (ui.kitCat !== 'All' && !cats.includes(ui.kitCat)) ui.kitCat = 'All';
+  $('#k-cats').innerHTML = ['All', ...cats].map(c => `<button class="chip" aria-pressed="${ui.kitCat === c}" data-cat="${esc(c)}">${esc(c)} <span class="tiny" style="opacity:.7">${c === 'All' ? ings.length : ings.filter(i => i.category === c).length}</span></button>`).join('');
+  $('#k-cats').querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => { ui.kitCat = b.dataset.cat; drawKitchen(); }));
+  const shown = ings.filter(i => (ui.kitCat === 'All' || i.category === ui.kitCat) && (!f || norm(i.name).includes(f) || ((ING_BY_NAME[i.name.toLowerCase()] || {}).aliases || []).some(a => norm(a).includes(f))));
+  const groups = cats.map(c => [c, shown.filter(i => i.category === c).sort((a, b) => a.name.localeCompare(b.name))]).filter(g => g[1].length);
+  $('#k-list').innerHTML = groups.length ? groups.map(([c, items]) => `<div class="group-h"><span class="label">${esc(c)}</span><span class="small muted">${items.length}</span></div>
+    <div class="rows">${items.map(i => { const meta = ING_BY_NAME[i.name.toLowerCase()]; const units = meta ? meta.allowed_units : CUSTOM_UNITS; return `<div class="irow" data-id="${i.id}">
+      <span class="n">${esc(i.name)}${meta && meta.aliases[0] ? `<span class="a">${esc(meta.aliases[0])}</span>` : ''}</span>
+      <span class="ctl"><span class="stepper"><button type="button" data-st="-1" aria-label="Less ${esc(i.name)}">−</button><input type="number" inputmode="decimal" min="0" step="any" value="${i.quantity ?? ''}" placeholder="Qty" aria-label="Quantity of ${esc(i.name)}" id="q-${i.id}"><button type="button" data-st="1" aria-label="More ${esc(i.name)}">+</button></span>
+      <select class="unit-sel" aria-label="Unit for ${esc(i.name)}" id="u-${i.id}">${units.map(x => `<option ${x === i.unit ? 'selected' : ''}>${x}</option>`).join('')}</select></span>
+      <button class="del" data-del aria-label="Remove ${esc(i.name)}">${ICON.trash}</button></div>`; }).join('')}</div>`).join('')
+    : `<p class="muted" style="padding:20px 4px">Nothing matches “${esc(ui.kitFilter)}”. <button class="btn sm soft" data-add>Add it</button></p>`;
+  $('#k-list').querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', openAdd));
+  $('#k-list').querySelectorAll('.irow').forEach(row => {
+    const id = row.dataset.id; const qi = row.querySelector('input'); const sel = row.querySelector('select');
+    const step = u => ({g: 50, kg: .5, ml: 100, L: .5}[u] || 1);
+    let t; const saveQ = () => { clearTimeout(t); t = setTimeout(() => DB.updateIngredient(id, {quantity: qi.value === '' ? null : Number(qi.value)}), 500); };
+    row.querySelectorAll('[data-st]').forEach(b => b.addEventListener('click', () => { const v = Math.max(0, (Number(qi.value) || 0) + step(sel.value) * Number(b.dataset.st)); qi.value = v ? +v.toFixed(2) : ''; saveQ(); }));
+    qi.addEventListener('input', saveQ);
+    sel.addEventListener('change', () => DB.updateIngredient(id, {unit: sel.value}));
+    row.querySelector('[data-del]').addEventListener('click', () => { const r = DB.removeIngredient(id); badges(); drawKitchen(); toast(`Removed ${r.name}`, {run: () => { DB.restoreIngredient(r); badges(); drawKitchen(); }}); });
   });
 }
 
 /* =========================================================
-   FAVOURITES
+   SAVED
    ========================================================= */
-function renderFavourites(){
+function renderSaved(){
   const favs = DB.favourites(); const have = new Set(DB.ingredients().map(i => i.name.toLowerCase()));
-  view.innerHTML = `<div class="narrow">
-  <div class="page-head"><a class="back" href="#/" aria-label="Back to home">${ICON.back}</a><div><h1>Favourites</h1><p class="muted small">${favs.length} saved dish${favs.length === 1 ? '' : 'es'}</p></div></div>
-  ${favs.length ? `<div class="fav-grid">${favs.map(f => { const miss = f.uses.filter(x => !have.has(x.toLowerCase())); return `<article class="meal">
-      <div class="meal-top"><div><span class="slot">${esc(f.slot)}</span><h3>${esc(f.dish)}</h3></div><span class="mins">${ICON.clock}${esc(f.minutes)} min</span></div>
-      ${miss.length ? `<span class="status no">Missing: ${esc(miss.join(', '))}</span>` : `<span class="status ok">✓ You can make this now</span>`}
-      <div class="chips">${f.uses.map(x => `<span class="chip use">${esc(x)}</span>`).join('')}</div>
-      <div class="meal-actions"><span class="small muted">Saved ${new Date(f.created_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short'})}</span><span class="spacer"></span><button class="act heart" aria-pressed="true" data-unfav="${f.id}">${ICON.heart}Remove</button></div>
-    </article>`; }).join('')}</div>`
-  : `<div class="empty"><h2>No favourites yet</h2><p>Tap <b>Save</b> on any suggestion to keep it here. You'll see straight away whether you can make it with what's in your kitchen.</p><a class="btn leaf" href="#/">Get a suggestion</a></div>`}</div>`;
-  view.querySelectorAll('[data-unfav]').forEach(b => b.addEventListener('click', () => { const f = DB.removeFavourite(b.dataset.unfav); badges(); renderFavourites(); toast(`Removed ${f.dish}`, {run: () => { DB.restoreFavourite(f); badges(); renderFavourites(); }}); }));
+  const withStatus = favs.map(f => ({f, miss: f.uses.filter(x => !have.has(String(x).toLowerCase()))}));
+  const canNow = withStatus.filter(x => !x.miss.length).length;
+  const shown = ui.savedFilter === 'now' ? withStatus.filter(x => !x.miss.length) : withStatus.slice().sort((a, b) => a.miss.length - b.miss.length);
+  view().innerHTML = `<div class="page wide">
+    <header class="page-head"><div><h1>Saved dishes</h1><p class="muted">${favs.length} saved · ${canNow} you can make now</p></div></header>
+    ${favs.length ? `<div class="chips" style="margin-bottom:16px"><button class="chip" aria-pressed="${ui.savedFilter === 'all'}" data-f="all">All ${favs.length}</button><button class="chip" aria-pressed="${ui.savedFilter === 'now'}" data-f="now">Can make now ${canNow}</button></div>
+    ${shown.length ? `<div class="fav-grid">${shown.map(({f, miss}) => `<article class="meal">
+        <div class="meal-top"><span class="meal-ic ${f.slot}">${f.slot === 'breakfast' ? ICON.sun : ICON.bowl}</span><div style="flex:1; min-width:0"><span class="slot">${esc(f.slot)}</span><h3>${esc(f.dish)}</h3><span class="mins">${ICON.clock}${esc(f.minutes)} min</span></div></div>
+        ${miss.length ? `<span class="status no">Missing ${esc(miss.join(', '))}</span>` : `<span class="status ok">${ICON.check} You can make this now</span>`}
+        <div class="chips">${f.uses.map(x => `<span class="chip ${have.has(String(x).toLowerCase()) ? 'use' : 'miss'}">${esc(x)}</span>`).join('')}</div>
+        <div class="meal-actions"><span class="small muted">Saved ${new Date(f.created_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short'})}</span><span class="spacer"></span>
+          ${miss.length ? `<button class="act" data-addmiss="${esc(miss.join('|'))}">${ICON.plus}Add missing</button>` : ''}
+          <button class="act heart" aria-pressed="true" data-unfav="${f.id}" aria-label="Remove ${esc(f.dish)} from saved">${ICON.heart}</button></div>
+      </article>`).join('')}</div>` : `<div class="empty"><h2>Nothing you can make right now</h2><p>Your saved dishes each need something you don't have.</p><button class="btn" data-f="all">Show all saved</button></div>`}`
+    : `<div class="empty">${ICON.heartNav}<h2>No saved dishes yet</h2><p>Tap <b>Save</b> on a suggestion you like. You'll see at a glance whether you can make it with what's in your kitchen.</p><a class="btn leaf" href="#/">Get a suggestion</a></div>`}
+  </div>`;
+  view().querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { ui.savedFilter = b.dataset.f; renderSaved(); }));
+  view().querySelectorAll('[data-unfav]').forEach(b => b.addEventListener('click', () => { const f = DB.removeFavourite(b.dataset.unfav); badges(); renderSaved(); toast(`Removed ${f.dish}`, {run: () => { DB.restoreFavourite(f); badges(); renderSaved(); }}); }));
+  view().querySelectorAll('[data-addmiss]').forEach(b => b.addEventListener('click', () => { const list = b.dataset.addmiss.split('|'); list.forEach(n => DB.addIngredient(n, '', (ING_BY_NAME[n.toLowerCase()] || {}).default_unit)); badges(); toast(`Added ${list.join(', ')} to your kitchen`); renderSaved(); }));
 }
 
 /* =========================================================
-   SETTINGS — no API key here; the server holds it
+   PROFILE
    ========================================================= */
-function renderSettings(){
+function renderProfile(){
   const u = DB.currentUser(); const nSug = DB.suggestions().length, nFav = DB.favourites().length;
-  view.innerHTML = `<div class="narrow">
-  <div class="page-head"><a class="back" href="#/" aria-label="Back to home">${ICON.back}</a><h1>Settings</h1></div>
-  <div class="stack">
-    <div class="card stack"><span class="label">Profile</span>
-      <div class="field"><label for="s-name">Name</label><input class="input" id="s-name" value="${esc(u.name)}"></div>
-      <div class="field"><label>Email</label><span>${esc(u.email)}</span></div></div>
-    <div class="card stack"><span class="label">Food preference</span>
-      <div class="seg" role="group" aria-label="Food preference">${[['veg','Veg'],['egg','Eggetarian'],['nonveg','Non-veg']].map(([k, l]) => `<button type="button" data-diet="${k}" aria-pressed="${u.diet === k}">${l}</button>`).join('')}</div>
-      <p class="small muted">Suggestions never include food outside this preference.</p></div>
-    <div class="card stack"><span class="label">Always in my kitchen</span>
-      <p class="small muted">Staples you never run out of. They're assumed available, so you don't need to add them.</p>
-      <div class="chips">${u.staples.map((s, n) => `<span class="chip">${esc(s)}<button class="x" data-unstaple="${n}" aria-label="Remove ${esc(s)}">×</button></span>`).join('')}</div>
-      <div class="combo"><span class="combo-icon">${ICON.search}</span><input class="input combo-input" id="staple-q" placeholder="Add a staple, e.g. ghee, hing" autocomplete="off" aria-label="Add a staple"><ul class="combo-list" id="staple-list" role="listbox" hidden></ul></div></div>
-    <div class="card stack"><span class="label">Your activity</span><p>${nSug} suggestion${nSug === 1 ? '' : 's'} so far · ${nFav} favourite${nFav === 1 ? '' : 's'}</p></div>
-    <div class="card stack"><span class="label">Account</span>
-      <button class="btn" id="signout">Log out</button>
-      <div id="del-zone"><button class="btn ghost block" id="del-btn" style="color:var(--danger)">Delete my data</button></div></div>
-  </div></div>`;
-  $('#s-name').addEventListener('change', e => { DB.updateProfile({name: e.target.value.trim() || u.name}); toast('Name saved'); });
-  view.querySelectorAll('[data-diet]').forEach(b => b.addEventListener('click', () => { DB.updateProfile({diet: b.dataset.diet}); toast('Preference saved'); renderSettings(); }));
-  view.querySelectorAll('[data-unstaple]').forEach(b => b.addEventListener('click', () => { const st = u.staples.slice(); st.splice(Number(b.dataset.unstaple), 1); DB.updateProfile({staples: st}); renderSettings(); }));
-  const sq = $('#staple-q'), sl = $('#staple-list');
-  sq.addEventListener('input', () => { const r = searchIngredients(sq.value).slice(0, 8); sl.hidden = !r.length; sl.innerHTML = r.map(x => `<li class="opt" data-st="${esc(x.i.name)}"><div class="o-main"><div class="o-name">${esc(x.i.name)}</div><div class="o-sub">${esc(x.i.category)}</div></div></li>`).join('');
-    sl.querySelectorAll('[data-st]').forEach(o => { o.addEventListener('mousedown', e => e.preventDefault()); o.addEventListener('click', () => { const n = o.dataset.st; if (!u.staples.includes(n)) DB.updateProfile({staples: [...u.staples, n]}); toast(`${n} added to staples`); renderSettings(); }); }); });
-  sq.addEventListener('blur', () => setTimeout(() => sl.hidden = true, 120));
-  $('#signout').addEventListener('click', async () => { await DB.signOut(); ui.result = null; location.hash = '#/login'; route(); });
-  $('#del-btn').addEventListener('click', () => {
-    $('#del-zone').innerHTML = `<div class="notice err"><b>Delete your kitchen, favourites and history?</b><span>Your account stays. This can't be undone.</span><div class="chips"><button class="btn danger" id="del-yes">Yes, delete</button><button class="btn" id="del-no">Cancel</button></div></div>`;
-    $('#del-yes').addEventListener('click', () => { DB.deleteMyData(); ui.result = null; badges(); toast('Your data was deleted'); renderSettings(); });
-    $('#del-no').addEventListener('click', renderSettings);
+  view().innerHTML = `<div class="page">
+    <header class="page-head"><div><h1>Profile</h1><p class="muted">${esc(u.email)}</p></div></header>
+    <div class="stack">
+      <section class="card stack"><span class="label">Your name</span><input class="input" id="p-name" value="${esc(u.name)}" aria-label="Your name" autocomplete="given-name"></section>
+      <section class="card stack"><span class="label">Food preference</span>
+        <div class="seg" role="group" aria-label="Food preference">${[['veg','Veg'],['egg','Eggetarian'],['nonveg','Non-veg']].map(([k, l]) => `<button type="button" data-diet="${k}" aria-pressed="${u.diet === k}">${l}</button>`).join('')}</div>
+        <p class="small muted">Suggestions never include food outside this.</p></section>
+      <section class="card stack"><span class="label">Always in my kitchen</span>
+        <p class="small muted">Staples you never run out of. They're assumed available, so you don't add them to your kitchen.</p>
+        <div class="chips">${u.staples.map((s, n) => `<span class="chip">${esc(s)}<button class="del" style="width:26px;height:26px" data-unstaple="${n}" aria-label="Remove ${esc(s)}">${ICON.close}</button></span>`).join('')}</div>
+        <div class="search"><span class="s-ic">${ICON.search}</span><input class="input" id="st-q" placeholder="Add a staple, e.g. ghee, hing" autocomplete="off" aria-label="Add a staple"></div><ul class="res" id="st-res"></ul></section>
+      <section class="card stack"><span class="label">Your activity</span><p>${nSug} suggestion${nSug === 1 ? '' : 's'} · ${nFav} saved</p></section>
+      <section class="card stack"><span class="label">Account</span>
+        <button class="btn" id="signout">Log out</button>
+        <div id="del-zone"><button class="btn ghost block" id="del" style="color:var(--danger)">Delete my data</button></div></section>
+    </div></div>`;
+  $('#p-name').addEventListener('change', e => { DB.updateProfile({name: e.target.value.trim() || u.name}); toast('Name saved'); });
+  view().querySelectorAll('[data-diet]').forEach(b => b.addEventListener('click', () => { DB.updateProfile({diet: b.dataset.diet}); toast('Preference saved'); renderProfile(); }));
+  view().querySelectorAll('[data-unstaple]').forEach(b => b.addEventListener('click', () => { const st = u.staples.slice(); const gone = st.splice(Number(b.dataset.unstaple), 1)[0]; DB.updateProfile({staples: st}); renderProfile(); toast(`Removed ${gone}`, {run: () => { DB.updateProfile({staples: [...DB.currentUser().staples, gone]}); renderProfile(); }}); }));
+  const sq = $('#st-q'), sr = $('#st-res');
+  sq.addEventListener('input', () => { const r = searchIngredients(sq.value).slice(0, 6); sr.innerHTML = r.map(x => `<li><button class="res-btn" data-st="${esc(x.i.name)}"><span style="flex:1"><span class="rn">${esc(x.i.name)}</span><br><span class="rs">${esc(x.i.category)}</span></span>${u.staples.includes(x.i.name) ? '<span class="have">Added</span>' : ''}</button></li>`).join('');
+    sr.querySelectorAll('[data-st]').forEach(o => o.addEventListener('click', () => { const n = o.dataset.st; if (!u.staples.includes(n)) DB.updateProfile({staples: [...u.staples, n]}); toast(`${n} added to staples`); renderProfile(); })); });
+  $('#signout').addEventListener('click', async () => { await DB.signOut(); ui.result = null; location.hash = '#/login'; });
+  $('#del').addEventListener('click', () => {
+    $('#del-zone').innerHTML = `<div class="notice err"><b>Delete your kitchen, saved dishes and history?</b><span>Your account stays. This can't be undone.</span><div class="chips"><button class="btn sm" id="del-yes" style="color:var(--danger); border-color:var(--danger)">Yes, delete</button><button class="btn sm" id="del-no">Cancel</button></div></div>`;
+    $('#del-yes').addEventListener('click', () => { DB.deleteMyData(); ui.result = null; badges(); toast('Your data was deleted'); renderProfile(); });
+    $('#del-no').addEventListener('click', renderProfile);
   });
 }
 
@@ -885,29 +968,25 @@ function renderSettings(){
    ROUTER
    ========================================================= */
 let recovering = false;
-function route(){
-  const r = location.hash.replace(/^#\/?/, '') || 'home';
+function route(keepScroll){
+  const r = location.hash.replace(/^#\/?/, '') || 'cook';
   if (recovering) return renderNewPassword();
   if (!DB.currentUser()) return r === 'signup' ? renderSignup() : renderLogin();
   if (r === 'login' || r === 'signup'){ location.hash = '#/'; return; }
-  $('#top').hidden = false; navState(r); badges();
-  ({kitchen: renderKitchen, favourites: renderFavourites, settings: renderSettings}[r] || renderHome)();
-  window.scrollTo(0, 0);
+  if (r === 'welcome') return renderWelcome();
+  const page = {kitchen: 'kitchen', saved: 'saved', profile: 'profile', favourites: 'saved', settings: 'profile'}[r] || 'cook';
+  shell(page);
+  ({kitchen: renderKitchen, saved: renderSaved, profile: renderProfile}[page] || renderCook)();
+  if (!keepScroll) window.scrollTo(0, 0);
 }
-window.addEventListener('hashchange', route);
+window.addEventListener('hashchange', () => { closeAdd(); route(); });
 (async function boot(){
-  if (!sb){
-    view.innerHTML = `<div class="auth"><div class="auth-box card stack"><h1>Start Rasoi first</h1>
-      <p>This page has to be opened through the Rasoi server, not as a file or from another address.</p>
-      <p class="small muted">1. In Terminal run: <code>node ~/job-search-agent/kitchen-app/server.js</code><br>2. Then open <b>http://localhost:8787</b></p></div></div>`;
-    return;
-  }
-  view.innerHTML = '<div class="auth"><p class="muted">Loading your kitchen…</p></div>';
-  sb.auth.onAuthStateChange((event) => { if (event === 'PASSWORD_RECOVERY'){ recovering = true; route(); } });
-  try {
-    const {data} = await sb.auth.getSession();
-    if (data.session) await DB.load(data.session);
-  } catch(e){ console.error(e); toast("Couldn't load your data. Check your connection."); }
+  if (!sb){ $('#app').innerHTML = `<div class="auth"><div class="auth-box card stack"><h1>Start Rasoi first</h1><p>Open this page through the Rasoi server or its web address, not as a file.</p></div></div>`; return; }
+  $('#app').innerHTML = `<div class="auth"><p class="muted">Loading your kitchen…</p></div>`;
+  sb.auth.onAuthStateChange(event => { if (event === 'PASSWORD_RECOVERY'){ recovering = true; route(); } });
+  try { const {data} = await sb.auth.getSession(); if (data.session) await DB.load(data.session); }
+  catch(e){ console.error(e); toast("Couldn't load your data. Check your connection."); }
+  if (DB.currentUser() && !DB.ingredients().length && !local.get('rasoi:onboarded:' + DB.currentUser().id, false) && !location.hash.includes('welcome')) location.hash = '#/welcome';
   route();
 })();
 </script>

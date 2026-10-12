@@ -225,7 +225,10 @@ Deno.serve(async (req) => {
     const fresh = m.candidates.filter((c: any) => !avoid.includes(c.dish));
     const from = fresh.length ? fresh : m.candidates;
     const c = from[Math.floor(Math.random() * from.length)];
-    meals.push({ id: crypto.randomUUID(), slot: s, dish: c.dish, minutes: c.minutes, uses: c.uses, why: c.why });
+    // The other checked candidates come back as spares, so "Show another" is instant in the app.
+    // deno-lint-ignore no-explicit-any
+    const alternatives = m.candidates.filter((x: any) => x !== c).map((x: any) => ({ dish: x.dish, minutes: x.minutes, uses: x.uses, why: x.why }));
+    meals.push({ id: crypto.randomUUID(), slot: s, dish: c.dish, minutes: c.minutes, uses: c.uses, why: c.why, alternatives });
   }
   const possible = meals.length === slots.length;
   const u = res.j.usageMetadata || {};
@@ -248,7 +251,7 @@ Deno.serve(async (req) => {
   });
   if (ins.error) console.error("save suggestion", ins.error.message);
   else if (meals.length) {
-    const mi = await sb.from("suggestion_meals").insert(meals.map((m) => ({ ...m, suggestion_id: suggestion.id, user_id: userId })));
+    const mi = await sb.from("suggestion_meals").insert(meals.map(({ alternatives: _a, ...m }) => ({ ...m, suggestion_id: suggestion.id, user_id: userId })));
     if (mi.error) console.error("save meals", mi.error.message);
   }
 
