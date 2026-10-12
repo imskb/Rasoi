@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#C2410C">
+<meta name="theme-color" content="#FF9F7F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Rasoi">
 <title>Rasoi</title>
@@ -12,34 +12,37 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,650;12..96,750&family=Figtree:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: phone = content + bottom tab bar; tablet (>=768) = icon rail on the left; desktop (>=1100) = labelled sidebar.
-   Kesar orange for actions, green only for "you have it", haldi for saved. */
+   Pastel: peach coral for actions, lime for "you have it", lilac for saved. Dark text on every colour. */
 :root{
-  --bg:#F7F5F2; --surface:#FFFFFF; --sunk:#F0ECE7; --ink:#1E1915; --ink-2:#5A5049; --ink-3:#776B62;
-  --line:#E8E1DA; --line-strong:#C9BDB2;
-  --leaf:#C2410C; --leaf-ink:#A8360A; --leaf-soft:#FFEDE3; --on-leaf:#FFFFFF;        /* kesar: actions and the main card */
-  --ok:#2B8A3E; --ok-ink:#21712F; --ok-soft:#E3F4E6;                                  /* green: "you have it" */
-  --haldi:#E8A317; --haldi-soft:#FDF2D6; --haldi-ink:#8A5A00;                         /* haldi: saved */
+  --bg:#FBF9F7; --surface:#FFFFFF; --sunk:#F3EFEB; --ink:#1C1820; --ink-2:#55505C; --ink-3:#736D7A;
+  --line:#ECE6E1; --line-strong:#CFC7C0;
+  --leaf:#FF9F7F; --leaf-ink:#B23F16; --leaf-soft:#FFEDE5; --on-leaf:#1C1820;        /* peach coral: actions and the main card */
+  --ok:#A3E635; --ok-ink:#3F6212; --ok-soft:#EEFBD5;                                  /* lime: "you have it" */
+  --haldi:#C9A7FF; --haldi-soft:#F3EBFF; --haldi-ink:#6B2FC9;                         /* lilac: saved */
+  --hero-a:#FFC3A8; --hero-b:#FFE49A; --hero-ink:#1C1820; --hero-ink-2:#4A4452;
   --danger:#B23A2E; --danger-soft:#F8E3E0;
   --shadow:0 1px 2px rgba(21,32,26,.05), 0 6px 20px rgba(21,32,26,.06);
   --shadow-lg:0 -10px 40px rgba(21,32,26,.18);
   --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
-  --r:18px; --nav-h:64px;
+  --r:22px; --nav-h:64px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#141110; --surface:#1D1917; --sunk:#27211E; --ink:#F2ECE7; --ink-2:#BCB0A7; --ink-3:#8F8279;
-  --line:#322B27; --line-strong:#52473F;
-  --leaf:#FF8A4C; --leaf-ink:#FFA374; --leaf-soft:#3A2116; --on-leaf:#1E0E05;
-  --ok:#5CC977; --ok-ink:#7FD894; --ok-soft:#173222;
-  --haldi:#F0B840; --haldi-soft:#33280F; --haldi-ink:#F5CB6E;
+  --bg:#131117; --surface:#1C1921; --sunk:#26222C; --ink:#F3F0F7; --ink-2:#BDB6C6; --ink-3:#958DA0;
+  --line:#2E2935; --line-strong:#4D4656;
+  --leaf:#FFA585; --leaf-ink:#FFB59A; --leaf-soft:#3A2420; --on-leaf:#1C1820;
+  --ok:#B5F04F; --ok-ink:#C6F57A; --ok-soft:#24301A;
+  --haldi:#D2B5FF; --haldi-soft:#2E2440; --haldi-ink:#DCC6FF;
+  --hero-a:#FFB494; --hero-b:#FFDE85;
   --danger:#F08A7E; --danger-soft:#3A1D19;
   --shadow:0 1px 2px rgba(0,0,0,.35); --shadow-lg:0 -10px 40px rgba(0,0,0,.5); color-scheme:dark;}}
 :root[data-theme="dark"]{
-  --bg:#141110; --surface:#1D1917; --sunk:#27211E; --ink:#F2ECE7; --ink-2:#BCB0A7; --ink-3:#8F8279;
-  --line:#322B27; --line-strong:#52473F;
-  --leaf:#FF8A4C; --leaf-ink:#FFA374; --leaf-soft:#3A2116; --on-leaf:#1E0E05;
-  --ok:#5CC977; --ok-ink:#7FD894; --ok-soft:#173222;
-  --haldi:#F0B840; --haldi-soft:#33280F; --haldi-ink:#F5CB6E;
+  --bg:#131117; --surface:#1C1921; --sunk:#26222C; --ink:#F3F0F7; --ink-2:#BDB6C6; --ink-3:#958DA0;
+  --line:#2E2935; --line-strong:#4D4656;
+  --leaf:#FFA585; --leaf-ink:#FFB59A; --leaf-soft:#3A2420; --on-leaf:#1C1820;
+  --ok:#B5F04F; --ok-ink:#C6F57A; --ok-soft:#24301A;
+  --haldi:#D2B5FF; --haldi-soft:#2E2440; --haldi-ink:#DCC6FF;
+  --hero-a:#FFB494; --hero-b:#FFDE85;
   --danger:#F08A7E; --danger-soft:#3A1D19;
   --shadow:0 1px 2px rgba(0,0,0,.35); --shadow-lg:0 -10px 40px rgba(0,0,0,.5); color-scheme:dark;}
 
@@ -78,7 +81,7 @@ h3{font-size:1.18rem; font-weight:650; line-height:1.25}
 .nav a[aria-current="page"]{color:var(--leaf-ink)}
 .nav a[aria-current="page"] .ic{background:var(--leaf-soft)}
 .nav .badge{position:absolute; top:2px; left:calc(50% + 6px); min-width:19px; height:19px; padding:0 5px; border-radius:99px; background:var(--leaf); color:var(--on-leaf); font-size:.68rem; font-weight:700; display:grid; place-items:center; font-variant-numeric:tabular-nums; border:2px solid var(--surface)}
-.nav .badge.fav{background:var(--haldi); color:#2A1C00}
+.nav .badge.fav{background:var(--haldi); color:var(--on-leaf)}
 .nav .badge:empty{display:none}
 
 /* rail (tablet) and sidebar (desktop) */
@@ -143,13 +146,13 @@ button.chip:hover{border-color:var(--ink-2)}
 /* ---------- cook page ---------- */
 .cook-grid{display:grid; gap:16px; align-items:start}
 @media (min-width:1100px){.cook-grid{grid-template-columns:380px minmax(0,1fr); gap:28px}.cook-grid .left{position:sticky; top:24px}}
-.hero{background:linear-gradient(140deg, color-mix(in srgb, var(--leaf) 88%, var(--haldi)) 0%, var(--leaf) 55%, color-mix(in srgb, var(--leaf) 80%, #000) 100%); color:var(--on-leaf); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow)}
+.hero{background:linear-gradient(135deg, var(--hero-a), var(--hero-b)); color:var(--hero-ink); border-radius:24px; padding:20px; display:flex; flex-direction:column; gap:16px; box-shadow:var(--shadow)}
 .hero h2{font-size:1.45rem}
-.hero .seg{background:color-mix(in srgb, var(--on-leaf) 16%, transparent)}
-.hero .seg button{color:color-mix(in srgb, var(--on-leaf) 85%, transparent)}
-.hero .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink)}
-.hero .btn.go{background:var(--surface); color:var(--leaf-ink); border-color:var(--surface)}
-.hero .hint{font-size:.85rem; color:color-mix(in srgb, var(--on-leaf) 82%, transparent); text-align:center}
+.hero .seg{background:rgba(255,255,255,.5)}
+.hero .seg button{color:var(--hero-ink-2)}
+.hero .seg button[aria-pressed="true"]{background:#FFFFFF; color:var(--hero-ink)}
+.hero .btn.go{background:var(--hero-ink); color:#FFFFFF; border-color:var(--hero-ink)}
+.hero .hint{font-size:.85rem; color:var(--hero-ink-2); text-align:center}
 .kit-card{display:flex; flex-direction:column; gap:12px}
 .kit-top{display:flex; align-items:center; gap:12px}
 .kit-count{font-family:var(--f-display); font-weight:750; font-size:2rem; line-height:1; font-variant-numeric:tabular-nums}
@@ -165,7 +168,7 @@ button.chip:hover{border-color:var(--ink-2)}
 @media (prefers-reduced-motion:no-preference){.step.now .dot{animation:spin .8s linear infinite}}
 @keyframes spin{to{transform:rotate(360deg)}}
 .step.done{color:var(--ink-2)}
-.step.done .dot{background:var(--ok); border-color:var(--ok); color:#fff}
+.step.done .dot{background:var(--ok); border-color:var(--ok); color:var(--ink)}
 .skel{height:14px; border-radius:7px; background:var(--sunk)}
 @media (prefers-reduced-motion:no-preference){.skel{animation:pulse 1.2s ease-in-out infinite}}
 @keyframes pulse{50%{opacity:.45}}
@@ -223,7 +226,7 @@ button.chip:hover{border-color:var(--ink-2)}
 }
 @media (min-width:341px){.irow .ctl{display:contents}}
 @media (max-width:767px){#k-list{padding-bottom:72px}}
-.fab{position:fixed; z-index:25; right:16px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); min-height:56px; padding:0 22px; border-radius:18px; box-shadow:0 8px 24px rgba(194,65,12,.35)}
+.fab{position:fixed; z-index:25; right:16px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); min-height:56px; padding:0 22px; border-radius:18px; box-shadow:0 8px 24px rgba(255,159,127,.45)}
 @media (min-width:768px){.fab{position:static; box-shadow:none}}
 .empty{text-align:center; padding:34px 20px; border:1.5px dashed var(--line-strong); border-radius:var(--r); color:var(--ink-2); display:flex; flex-direction:column; align-items:center; gap:12px}
 .empty h2{color:var(--ink)}
@@ -260,7 +263,7 @@ button.chip:hover{border-color:var(--ink-2)}
 .tile .t-a{font-size:.76rem; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .tile .t-m{position:absolute; right:12px; top:50%; transform:translateY(-50%); width:26px; height:26px; border-radius:50%; border:1.5px solid var(--line-strong); display:grid; place-items:center; font-weight:700; color:var(--ink-3)}
 .tile[aria-pressed="true"]{border-color:var(--ok); background:var(--ok-soft)}
-.tile[aria-pressed="true"] .t-m{background:var(--ok); border-color:var(--ok); color:#fff}
+.tile[aria-pressed="true"] .t-m{background:var(--ok); border-color:var(--ok); color:var(--ink)}
 .res{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
 .res-item{border-radius:14px}
 .res-btn{width:100%; display:flex; align-items:center; gap:12px; padding:11px 12px; border:0; background:none; text-align:left; border-radius:14px; min-height:56px}
