@@ -23,6 +23,7 @@ const DIRECTORY = global.window.INGREDIENTS;
 const PORT = Number(env.PORT || 8787);
 // Generation settings. Change them in .env, then restart the server.
 const THINKING = env.GEMINI_THINKING || 'high';                 // Gemini's version of "effort": low | high
+const MAX_TOKENS = Number(env.GEMINI_MAX_TOKENS || 16384);   // thinking counts against this
 const TEMPERATURE = env.GEMINI_TEMPERATURE != null ? Number(env.GEMINI_TEMPERATURE) : 0.5;
 
 // ---- prompt ----
@@ -127,7 +128,7 @@ async function callGemini(model, body) {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SYSTEM }] },
         contents: [{ role: 'user', parts: [{ text: buildUserPrompt(body) }] }],
-        generationConfig: { responseMimeType: 'application/json', responseSchema: SCHEMA, maxOutputTokens: 4096, temperature: TEMPERATURE, thinkingConfig: { thinkingLevel: THINKING } }
+        generationConfig: { responseMimeType: 'application/json', responseSchema: SCHEMA, maxOutputTokens: MAX_TOKENS, temperature: TEMPERATURE, thinkingConfig: { thinkingLevel: THINKING } }
       })
     });
     return { r, j: await r.json() };

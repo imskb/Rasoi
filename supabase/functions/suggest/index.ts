@@ -9,6 +9,7 @@
 //   GEMINI_THINKING       default high   (low | high)
 //   GEMINI_TEMPERATURE    default 0.5
 //   DAILY_LIMIT           default 15
+//   GEMINI_MAX_TOKENS     default 16384 (thinking tokens count against it)
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
 
 const env = (k: string, d = "") => Deno.env.get(k) ?? d;
@@ -18,6 +19,7 @@ const FALLBACKS = env("GEMINI_FALLBACKS", "gemini-3.1-flash-lite,gemini-flash-li
 const THINKING = env("GEMINI_THINKING", "high");
 const TEMPERATURE = Number(env("GEMINI_TEMPERATURE", "0.5"));
 const DAILY_LIMIT = Number(env("DAILY_LIMIT", "15"));
+const MAX_TOKENS = Number(env("GEMINI_MAX_TOKENS", "16384"));   // thinking counts against this, so keep it generous
 const PROMPT_VERSION = "v2";
 
 const CORS = {
@@ -134,7 +136,7 @@ async function callGemini(model: string, userPrompt: string) {
         systemInstruction: { parts: [{ text: SYSTEM }] },
         contents: [{ role: "user", parts: [{ text: userPrompt }] }],
         generationConfig: {
-          responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: 4096,
+          responseMimeType: "application/json", responseSchema: SCHEMA, maxOutputTokens: MAX_TOKENS,
           temperature: TEMPERATURE, thinkingConfig: { thinkingLevel: THINKING },
         },
       }),
