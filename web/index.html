@@ -184,6 +184,7 @@ button.chip:hover{border-color:var(--ink-2)}
 .mins{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; font-weight:600; color:var(--ink-2); margin-top:3px}
 .why{color:var(--ink-2)}
 .grounded{display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; color:var(--ok-ink)}
+.meal-actions .act{width:46px; height:46px; padding:0; border-radius:14px}
 .meal-actions{display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; align-items:center; flex-wrap:wrap}
 .act{display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:44px; min-width:44px; border:1px solid var(--line); background:var(--surface); padding:8px 13px; border-radius:13px; font-size:.9rem; font-weight:600; color:var(--ink-2)}
 .act:hover{border-color:var(--line-strong); color:var(--ink)}
@@ -226,6 +227,10 @@ button.chip:hover{border-color:var(--ink-2)}
 }
 @media (min-width:341px){.irow .ctl{display:contents}}
 @media (max-width:767px){#k-list{padding-bottom:72px}}
+.add-ic{background:var(--leaf-soft); color:var(--leaf-ink); border-color:transparent; width:46px; height:46px; border-radius:14px}
+.fab .fab-l{display:none}
+@media (max-width:767px){.fab{width:60px; height:60px; min-height:60px; padding:0; border-radius:20px}}
+@media (min-width:768px){.fab .fab-l{display:inline}}
 .fab{position:fixed; z-index:25; right:16px; bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px) + 16px); min-height:56px; padding:0 22px; border-radius:18px; box-shadow:0 8px 24px rgba(255,159,127,.45)}
 @media (min-width:768px){.fab{position:static; box-shadow:none}}
 .empty{text-align:center; padding:34px 20px; border:1.5px dashed var(--line-strong); border-radius:var(--r); color:var(--ink-2); display:flex; flex-direction:column; align-items:center; gap:12px}
@@ -757,7 +762,7 @@ function renderCook(){
         </section>
         <section class="card kit-card" aria-label="Your kitchen">
           <div class="kit-top"><div class="kit-count">${ings.length}</div><div class="spacer"><b>in your kitchen</b><p class="small muted">${ings.length ? 'Keep it current for better ideas.' : 'Add what you have to get started.'}</p></div>
-            <button class="btn soft sm" type="button" data-add>${ICON.plus} Add</button></div>
+            <button class="icon-btn add-ic" type="button" data-add aria-label="Add ingredients" title="Add ingredients">${ICON.plus}</button></div>
           ${preview.length ? `<div class="kit-preview">${preview.map(i => `<span class="chip">${esc(i.name)}</span>`).join('')}${ings.length > 6 ? `<a class="chip" href="#/kitchen" style="text-decoration:none">+${ings.length - 6} more</a>` : ''}</div>` : `<button class="btn block" type="button" data-pack0>+ Add everyday basics (10 items)</button>`}
         </section>
       </div>
@@ -824,11 +829,11 @@ function mealHTML(m){
     <div class="stack" style="gap:6px"><span class="grounded">${ICON.check} Everything is in your kitchen</span><div class="chips">${m.uses.map(x => `<span class="chip use">${esc(x)}</span>`).join('')}</div></div>
     ${ui.downOpen === m.id ? `<div class="why-not"><b class="small">What was wrong?</b><div class="chips">${["I don't have something", "Don't like it", 'Takes too long', 'Had it recently'].map(x => `<button class="chip" data-reason="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>` : ''}
     <div class="meal-actions">
-      <button class="act heart" data-fav aria-pressed="${fav}">${ICON.heart}${fav ? 'Saved' : 'Save'}</button>
-      <button class="act" data-swap>${ICON.shuffle}${alts.length ? 'Show another' : 'New idea'}</button>
+      <button class="act heart" data-fav aria-pressed="${fav}" aria-label="${fav ? 'Saved. Tap to remove' : 'Save this dish'}" title="${fav ? 'Saved' : 'Save'}">${ICON.heart}</button>
+      <button class="act" data-swap aria-label="${alts.length ? 'Show another dish' : 'Get a new idea'}" title="${alts.length ? 'Show another' : 'New idea'}">${ICON.shuffle}</button>
       <span class="spacer"></span>
-      <button class="act up" data-up aria-pressed="${rate === 1}" aria-label="Good suggestion">${ICON.up}</button>
-      <button class="act down" data-down aria-pressed="${rate === -1}" aria-label="Not useful">${ICON.down}</button>
+      <button class="act up" data-up aria-pressed="${rate === 1}" aria-label="Good suggestion" title="Good suggestion">${ICON.up}</button>
+      <button class="act down" data-down aria-pressed="${rate === -1}" aria-label="Not useful" title="Not useful">${ICON.down}</button>
     </div></article>`;
 }
 function bindResults(){
@@ -868,7 +873,7 @@ function renderKitchen(){
   const ings = DB.ingredients();
   view().innerHTML = `<div class="page">
     <header class="page-head"><div><h1>My kitchen</h1><p class="muted">${ings.length} ingredient${ings.length === 1 ? '' : 's'} · quantities are optional</p></div>
-      <button class="btn leaf fab" type="button" data-add>${ICON.plus} Add</button></header>
+      <button class="btn leaf fab" type="button" data-add aria-label="Add ingredients" title="Add ingredients">${ICON.plus}<span class="fab-l">Add</span></button></header>
     ${ings.length ? `<div class="k-tools">
       <div class="search"><span class="s-ic">${ICON.search}</span><input class="input" id="k-q" type="search" placeholder="Find in your kitchen" value="${esc(ui.kitFilter)}" aria-label="Find in your kitchen" autocomplete="off"></div>
       <div class="hscroll" id="k-cats"></div></div><div id="k-list"></div>
@@ -926,7 +931,7 @@ function renderSaved(){
         <div class="chips">${f.uses.map(x => `<span class="chip ${have.has(String(x).toLowerCase()) ? 'use' : 'miss'}">${esc(x)}</span>`).join('')}</div>
         <div class="meal-actions"><span class="small muted">Saved ${new Date(f.created_at).toLocaleDateString(undefined, {day: 'numeric', month: 'short'})}</span><span class="spacer"></span>
           ${miss.length ? `<button class="act" data-addmiss="${esc(miss.join('|'))}">${ICON.plus}Add missing</button>` : ''}
-          <button class="act heart" aria-pressed="true" data-unfav="${f.id}" aria-label="Remove ${esc(f.dish)} from saved">${ICON.heart}</button></div>
+          <button class="act heart" aria-pressed="true" data-unfav="${f.id}" aria-label="Remove ${esc(f.dish)} from saved" title="Remove from saved">${ICON.heart}</button></div>
       </article>`).join('')}</div>` : `<div class="empty"><h2>Nothing you can make right now</h2><p>Your saved dishes each need something you don't have.</p><button class="btn" data-f="all">Show all saved</button></div>`}`
     : `<div class="empty">${ICON.heartNav}<h2>No saved dishes yet</h2><p>Tap <b>Save</b> on a suggestion you like. You'll see at a glance whether you can make it with what's in your kitchen.</p><a class="btn leaf" href="#/">Get a suggestion</a></div>`}
   </div>`;
