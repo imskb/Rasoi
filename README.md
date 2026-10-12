@@ -2,7 +2,7 @@
 
 Tell Rasoi what's in your kitchen and it suggests what to cook, using only what you have.
 
-**Live:** _link coming_ · Built with plain HTML/JS, Supabase (auth, Postgres, edge function) and Gemini.
+**Live:** https://rasoi-eta.pages.dev · Built with plain HTML/JS, Supabase (auth, Postgres, edge function) and Gemini.
 
 ## How it works
 
