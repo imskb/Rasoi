@@ -129,6 +129,9 @@ h3{font-size:1.18rem; font-weight:650; line-height:1.25}
 .field{display:flex; flex-direction:column; gap:6px; min-width:0}
 .field > label{font-size:.88rem; font-weight:600; color:var(--ink-2)}
 .err-text{color:var(--danger); font-size:.88rem; font-weight:600}
+.input[aria-invalid="true"]{border-color:var(--danger); box-shadow:0 0 0 3px var(--danger-soft)}
+.field-err{color:var(--danger); font-size:.84rem; font-weight:600; margin-top:-2px}
+.field-err button{border:0; background:none; padding:0; color:var(--leaf-ink); font-weight:700; text-decoration:underline; text-underline-offset:3px}
 .seg{display:grid; grid-auto-columns:1fr; grid-auto-flow:column; background:var(--sunk); border-radius:15px; padding:4px; gap:4px}
 .seg button{border:0; background:transparent; min-height:44px; padding:8px 6px; border-radius:11px; font-weight:600; color:var(--ink-2)}
 .seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -536,6 +539,43 @@ function authShell(inner){ $('#app').innerHTML = `<section class="auth"><div cla
 const pwField = (id, label, auto) => `<div class="field"><label for="${id}">${label}</label><div class="pw"><input class="input" id="${id}" type="password" autocomplete="${auto}" required minlength="8"><button type="button" data-showpw="${id}" aria-label="Show password">Show</button></div></div>`;
 function bindPw(){ document.querySelectorAll('[data-showpw]').forEach(b => b.addEventListener('click', () => { const i = $('#' + b.dataset.showpw); const show = i.type === 'password'; i.type = show ? 'text' : 'password'; b.textContent = show ? 'Hide' : 'Show'; b.setAttribute('aria-label', show ? 'Hide password' : 'Show password'); })); }
 
+/* ---------- email validation ---------- */
+const EMAIL_TYPOS = {'gmial.com':'gmail.com','gmal.com':'gmail.com','gamil.com':'gmail.com','gmaill.com':'gmail.com','gnail.com':'gmail.com','gmail.co':'gmail.com','gmail.con':'gmail.com','gmail.cm':'gmail.com','gmail.in':'gmail.com','yahooo.com':'yahoo.com','yaho.com':'yahoo.com','yahoo.con':'yahoo.com','yahoo.co':'yahoo.co.in','hotmial.com':'hotmail.com','hotmal.com':'hotmail.com','hotmail.con':'hotmail.com','outlok.com':'outlook.com','outlook.con':'outlook.com','iclod.com':'icloud.com','icloud.con':'icloud.com','rediffmail.con':'rediffmail.com'};
+function cleanEmail(v){ return String(v || '').trim().toLowerCase(); }
+function emailError(v){
+  const e = cleanEmail(v);
+  if (!e) return 'Enter your email address.';
+  if (/\s/.test(e)) return "Email addresses can't contain spaces.";
+  const parts = e.split('@');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return 'Enter a full email address, like name@gmail.com.';
+  const [local, domain] = parts;
+  if (local.length > 64 || e.length > 254) return 'That email address is too long.';
+  if (!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(local) || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return 'Check the part before the @. It has a character that isn\'t allowed.';
+  if (!/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/.test(domain)) return 'Check the part after the @. It should look like gmail.com.';
+  return '';
+}
+function emailSuggestion(v){
+  const e = cleanEmail(v); const at = e.lastIndexOf('@'); if (at < 1) return '';
+  const fix = EMAIL_TYPOS[e.slice(at + 1)]; return fix ? e.slice(0, at + 1) + fix : '';
+}
+// Wires live validation onto an email input: checks on leaving the field, re-checks while fixing, offers typo fixes.
+function bindEmail(input){
+  const box = document.createElement('p'); box.className = 'field-err'; box.id = input.id + '-err'; box.hidden = true; box.setAttribute('role', 'alert');
+  input.closest('.field').appendChild(box); input.setAttribute('aria-describedby', box.id);
+  let touched = false;
+  const show = () => {
+    const err = emailError(input.value), sug = emailSuggestion(input.value);
+    input.setAttribute('aria-invalid', err ? 'true' : 'false');
+    if (err){ box.textContent = err; box.hidden = false; }
+    else if (sug){ box.innerHTML = `Did you mean <button type="button">${esc(sug)}</button>?`; box.hidden = false; box.querySelector('button').onclick = () => { input.value = sug; show(); input.focus(); }; }
+    else { box.hidden = true; box.textContent = ''; }
+    return !err;
+  };
+  input.addEventListener('blur', () => { input.value = cleanEmail(input.value); touched = true; show(); });
+  input.addEventListener('input', () => { if (touched) show(); });
+  return {check: () => { touched = true; input.value = cleanEmail(input.value); return show(); }};
+}
+
 function renderSignup(){
   authShell(`<div class="stack" style="gap:8px"><h1>Never wonder what to cook again</h1><p class="muted">Tell Rasoi what's in your kitchen. It suggests breakfast and lunch using only what you have.</p></div>
   <form class="card stack" id="f" novalidate>
@@ -553,12 +593,14 @@ function renderSignup(){
     const m = $('#meter'); m.style.width = (s / 4 * 100) + '%'; m.style.background = s < 2 ? 'var(--danger)' : s < 3 ? 'var(--haldi)' : 'var(--leaf)';
     $('#meter-text').textContent = v.length < 8 ? `At least 8 characters (${v.length}/8).` : ['Weak','Weak','Okay','Good','Strong'][s] + ' password.';
   });
+  const emailV = bindEmail($('#su-email'));
   $('#f').addEventListener('submit', async e => {
-    e.preventDefault(); const err = $('#err');
-    const name = $('#su-name').value.trim(), email = $('#su-email').value.trim(), pw = $('#su-pw').value;
+    e.preventDefault(); const err = $('#err'); err.hidden = true;
+    const name = $('#su-name').value.trim(), pw = $('#su-pw').value;
     const fail = m => { err.textContent = m; err.hidden = false; };
-    if (!name) return fail('Enter your name.');
-    if (!/^\S+@\S+\.\S+$/.test(email)) return fail('Enter a valid email address.');
+    if (!name){ $('#su-name').focus(); return fail('Enter your name.'); }
+    if (!emailV.check()){ $('#su-email').focus(); return; }
+    const email = cleanEmail($('#su-email').value);
     if (pw.length < 8) return fail('Use a password of at least 8 characters.');
     const btn = $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Creating account…';
     try {
@@ -583,15 +625,20 @@ function renderLogin(){
   </form>
   <p class="switch-auth">New to Rasoi? <a href="#/signup">Create an account</a></p>`);
   bindPw();
+  const emailV = bindEmail($('#li-email'));
   $('#forgot').addEventListener('click', async () => {
-    const email = $('#li-email').value.trim(); const err = $('#err');
-    if (!/^\S+@\S+\.\S+$/.test(email)){ err.textContent = 'Enter your email above, then tap Forgot password.'; err.hidden = false; $('#li-email').focus(); return; }
+    const err = $('#err'); err.hidden = true;
+    if (!emailV.check()){ $('#li-email').focus(); return; }
+    const email = cleanEmail($('#li-email').value);
     try { await DB.resetPassword(email); err.hidden = true; toast('Check your email for a link to reset your password'); }
     catch(x){ err.textContent = /rate/i.test(x.message) ? 'Too many emails sent. Wait a few minutes and try again.' : x.message; err.hidden = false; }
   });
   $('#f').addEventListener('submit', async e => {
-    e.preventDefault(); const err = $('#err'); const btn = $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Logging in…';
-    try { await DB.logIn($('#li-email').value.trim(), $('#li-pw').value); location.hash = DB.ingredients().length ? '#/' : '#/welcome'; route(); }
+    e.preventDefault(); const err = $('#err'); err.hidden = true;
+    if (!emailV.check()){ $('#li-email').focus(); return; }
+    if (!$('#li-pw').value){ err.textContent = 'Enter your password.'; err.hidden = false; $('#li-pw').focus(); return; }
+    const btn = $('#f button[type=submit]'); btn.disabled = true; btn.textContent = 'Logging in…';
+    try { await DB.logIn(cleanEmail($('#li-email').value), $('#li-pw').value); location.hash = DB.ingredients().length ? '#/' : '#/welcome'; route(); }
     catch(x){ btn.disabled = false; btn.textContent = 'Log in'; err.hidden = false;
       err.innerHTML = x.message === 'invalid' ? 'Email or password is incorrect. New here? <a href="#/signup">Create an account</a>.' : x.message === 'unconfirmed' ? 'Confirm your email first. Check your inbox for the link we sent.' : 'Something went wrong. Try again.'; }
   });
