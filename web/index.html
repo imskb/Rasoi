@@ -186,6 +186,7 @@ button.chip:hover{border-color:var(--ink-2)}
 .slot{font-family:var(--f-display); font-size:.72rem; font-weight:750; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
 .mins{display:inline-flex; align-items:center; gap:5px; font-size:.82rem; font-weight:600; color:var(--ink-2); margin-top:3px}
 .why{color:var(--ink-2)}
+.eat-with{display:inline-flex; align-items:center; gap:6px; width:max-content; max-width:100%; padding:5px 12px; border-radius:99px; background:var(--leaf-soft); color:var(--leaf-ink); font-size:.88rem; font-weight:600}
 .grounded{display:inline-flex; align-items:center; gap:6px; font-size:.8rem; font-weight:700; color:var(--ok-ink)}
 .meal-actions .act{width:46px; height:46px; padding:0; border-radius:14px}
 .meal-actions{display:flex; gap:8px; border-top:1px solid var(--line); padding-top:12px; align-items:center; flex-wrap:wrap}
@@ -872,6 +873,7 @@ function mealHTML(m){
   return `<article class="meal" data-meal="${m.id}">
     <div class="meal-top"><span class="meal-ic ${m.slot}">${m.slot === 'breakfast' ? ICON.sun : ICON.bowl}</span>
       <div style="flex:1; min-width:0"><span class="slot">${esc(m.slot)}</span><h3>${esc(m.dish)}</h3><span class="mins">${ICON.clock}${esc(m.minutes)} min</span></div></div>
+    ${m.eat_with ? `<p class="eat-with">${/on its own/i.test(m.eat_with) ? 'Eat it on its own' : `Eat with <b>${esc(m.eat_with)}</b>`}</p>` : ''}
     <p class="why">${esc(m.why)}</p>
     <div class="stack" style="gap:6px"><span class="grounded">${ICON.check} Everything is in your kitchen</span><div class="chips">${m.uses.map(x => `<span class="chip use">${esc(x)}</span>`).join('')}</div></div>
     ${ui.downOpen === m.id ? `<div class="why-not"><b class="small">What was wrong?</b><div class="chips">${["I don't have something", "Don't like it", 'Takes too long', 'Had it recently'].map(x => `<button class="chip" data-reason="${esc(x)}">${esc(x)}</button>`).join('')}</div></div>` : ''}
@@ -904,8 +906,8 @@ function bindResults(){
 async function swap(idx){
   const r = ui.result; const cur = r.meals[idx]; const alts = ui.alts[cur.id] || [];
   if (alts.length){
-    const next = alts.shift(); const m = {id: uid(), slot: cur.slot, dish: next.dish, minutes: next.minutes, uses: next.uses, why: next.why};
-    ui.alts[m.id] = [...alts, {dish: cur.dish, minutes: cur.minutes, uses: cur.uses, why: cur.why}].slice(0, 2);
+    const next = alts.shift(); const m = {id: uid(), slot: cur.slot, dish: next.dish, eat_with: next.eat_with, minutes: next.minutes, uses: next.uses, why: next.why};
+    ui.alts[m.id] = [...alts, {dish: cur.dish, eat_with: cur.eat_with, minutes: cur.minutes, uses: cur.uses, why: cur.why}].slice(0, 2);
     r.meals[idx] = m; DB.addMealVariant(r.id, m); ui.downOpen = null;
     const card = document.querySelector(`[data-meal="${cur.id}"]`); if (card){ card.outerHTML = mealHTML(m); bindResults(); }
     return;

@@ -20,7 +20,7 @@ const THINKING = env("GEMINI_THINKING", "high");
 const TEMPERATURE = Number(env("GEMINI_TEMPERATURE", "0.5"));
 const DAILY_LIMIT = Number(env("DAILY_LIMIT", "15"));
 const MAX_TOKENS = Number(env("GEMINI_MAX_TOKENS", "16384"));   // thinking counts against this, so keep it generous
-const PROMPT_VERSION = "v2";
+const PROMPT_VERSION = "v3";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -43,6 +43,7 @@ Hard rules:
 - If a reasonable dish is not possible for a requested meal, set possible=false, leave that meal out, and name the ONE ingredient that would unlock the most options. Never invent a marginal dish just to fill the slot.
 - When possible=false, also give nearest_dish: the dish they are closest to making, and nearest_missing: the 1 or 2 ingredients they lack for it.
 - In "why", mention only ingredients they actually have.
+- Every meal must be complete. For lunch, that means the main dish plus the base it is eaten with (roti, rice, paratha, bread, etc.). Put the base in "eat_with" and in the dish name, e.g. "Aloo Gobhi with Roti". The base must come from their kitchen: roti or paratha need atta, rice needs rice, bread needs bread. Add the base's ingredient (e.g. Atta, Rice) to "uses". If they have no base, set eat_with to "On its own" and choose dishes that work that way. For breakfast, add a base or drink only if it is natural and they have it; otherwise "On its own".
 - For each meal, give 3 different candidate dishes that all follow these rules.
 - "uses" lists only ingredients from the user's list (not staples), spelled exactly as the user's list spells them.`;
 
@@ -66,11 +67,12 @@ const SCHEMA = {
               type: "OBJECT",
               properties: {
                 dish: { type: "STRING" },
+                eat_with: { type: "STRING", description: "What it is eaten with, from their kitchen (Roti, Rice, Paratha...), or On its own." },
                 why: { type: "STRING", description: "One short line on why it suits what they have." },
                 uses: { type: "ARRAY", items: { type: "STRING" } },
                 minutes: { type: "INTEGER" },
               },
-              required: ["dish", "why", "uses", "minutes"],
+              required: ["dish", "eat_with", "why", "uses", "minutes"],
             },
           },
         },
@@ -227,8 +229,16 @@ Deno.serve(async (req) => {
     const c = from[Math.floor(Math.random() * from.length)];
     // The other checked candidates come back as spares, so "Show another" is instant in the app.
     // deno-lint-ignore no-explicit-any
-    const alternatives = m.candidates.filter((x: any) => x !== c).map((x: any) => ({ dish: x.dish, minutes: x.minutes, uses: x.uses, why: x.why }));
-    meals.push({ id: crypto.randomUUID(), slot: s, dish: c.dish, minutes: c.minutes, uses: c.uses, why: c.why, alternatives });
+    // deno-lint-ignore no-explicit-any
+    const full = (x: any) => {
+      const ew = String(x.eat_with || "").trim();
+      const named = !ew || /on its own/i.test(ew) || x.dish.toLowerCase().includes(ew.toLowerCase());
+      return { dish: named ? x.dish : `${x.dish} with ${ew}`, eat_with: ew, minutes: x.minutes, uses: x.uses, why: x.why };
+    };
+    // deno-lint-ignore no-explicit-any
+    const alternatives = m.candidates.filter((x: any) => x !== c).map(full);
+    const f = full(c);
+    meals.push({ id: crypto.randomUUID(), slot: s, dish: f.dish, eat_with: f.eat_with, minutes: f.minutes, uses: f.uses, why: f.why, alternatives });
   }
   const possible = meals.length === slots.length;
   const u = res.j.usageMetadata || {};
@@ -251,7 +261,7 @@ Deno.serve(async (req) => {
   });
   if (ins.error) console.error("save suggestion", ins.error.message);
   else if (meals.length) {
-    const mi = await sb.from("suggestion_meals").insert(meals.map(({ alternatives: _a, ...m }) => ({ ...m, suggestion_id: suggestion.id, user_id: userId })));
+    const mi = await sb.from("suggestion_meals").insert(meals.map(({ alternatives: _a, eat_with: _e, ...m }) => ({ ...m, suggestion_id: suggestion.id, user_id: userId })));
     if (mi.error) console.error("save meals", mi.error.message);
   }
 

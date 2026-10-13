@@ -14,7 +14,7 @@ try {
 } catch (e) { console.error('Missing .env file'); }
 const GEMINI_KEY = env.GEMINI_API_KEY;
 const MODEL = env.GEMINI_MODEL || 'gemini-flash-latest';
-const PROMPT_VERSION = 'v2';
+const PROMPT_VERSION = 'v3';
 
 // The ingredient directory, shared with the app (used by the grounding check)
 global.window = global.window || {};
@@ -39,6 +39,7 @@ Hard rules:
 - If a reasonable dish is not possible for a requested meal, set possible=false, leave that meal out, and name the ONE ingredient that would unlock the most options. Never invent a marginal dish just to fill the slot.
 - When possible=false, also give nearest_dish: the dish they are closest to making, and nearest_missing: the 1 or 2 ingredients they lack for it.
 - In "why", mention only ingredients they actually have.
+- Every meal must be complete. For lunch, that means the main dish plus the base it is eaten with (roti, rice, paratha, bread, etc.). Put the base in "eat_with" and in the dish name, e.g. "Aloo Gobhi with Roti". The base must come from their kitchen: roti or paratha need atta, rice needs rice, bread needs bread. Add the base's ingredient (e.g. Atta, Rice) to "uses". If they have no base, set eat_with to "On its own" and choose dishes that work that way. For breakfast, add a base or drink only if it is natural and they have it; otherwise "On its own".
 - For each meal, give 3 different candidate dishes that all follow these rules.
 - "uses" lists only ingredients from the user's list (not staples), spelled exactly as the user's list spells them.`;
 
@@ -62,11 +63,12 @@ const SCHEMA = {
               type: 'OBJECT',
               properties: {
                 dish: { type: 'STRING' },
+                eat_with: { type: 'STRING', description: 'What it is eaten with, from their kitchen (Roti, Rice, Paratha...), or On its own.' },
                 why: { type: 'STRING', description: 'One short line on why it suits what they have.' },
                 uses: { type: 'ARRAY', items: { type: 'STRING' } },
                 minutes: { type: 'INTEGER' }
               },
-              required: ['dish', 'why', 'uses', 'minutes']
+              required: ['dish', 'eat_with', 'why', 'uses', 'minutes']
             }
           }
         },
