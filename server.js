@@ -14,7 +14,7 @@ try {
 } catch (e) { console.error('Missing .env file'); }
 const GEMINI_KEY = env.GEMINI_API_KEY;
 const MODEL = env.GEMINI_MODEL || 'gemini-flash-latest';
-const PROMPT_VERSION = 'v3';
+const PROMPT_VERSION = 'v5';
 
 // The ingredient directory, shared with the app (used by the grounding check)
 global.window = global.window || {};
@@ -35,13 +35,14 @@ Hard rules:
 - Quantities, when given, are what they have. Do not suggest a dish that needs clearly more than that.
 - Respect the food preference: veg = no egg, meat or fish; egg = vegetarian plus eggs; nonveg = anything.
 - Do not repeat any dish in the "recently suggested" list.
-- Realistic everyday home cooking, under 45 minutes.
+- Realistic everyday home cooking: breakfast under 25 minutes, lunch under 45 minutes.
 - If a reasonable dish is not possible for a requested meal, set possible=false, leave that meal out, and name the ONE ingredient that would unlock the most options. Never invent a marginal dish just to fill the slot.
 - When possible=false, also give nearest_dish: the dish they are closest to making, and nearest_missing: the 1 or 2 ingredients they lack for it.
 - In "why", mention only ingredients they actually have.
-- Every meal must be complete. For lunch, that means the main dish plus the base it is eaten with (roti, rice, paratha, bread, etc.). Put the base in "eat_with" and in the dish name, e.g. "Aloo Gobhi with Roti". The base must come from their kitchen: roti or paratha need atta, rice needs rice, bread needs bread. Add the base's ingredient (e.g. Atta, Rice) to "uses". If they have no base, set eat_with to "On its own" and choose dishes that work that way. For breakfast, add a base or drink only if it is natural and they have it; otherwise "On its own".
+- BREAKFAST is light and a SINGLE dish: one item such as poha, upma, besan chilla, idli, dosa, uttapam, vermicelli upma, sprouts chaat, bread omelette, egg bhurji with toast, or a light paratha. No combos, no side dishes, no heavy gravies. It must be a dish people in India actually eat for breakfast: a dry sabzi on its own (like jeera aloo), a curry, or a stir-fry is NOT breakfast. Parathas count (aloo, paneer, gobhi, plain with curd). If no proper breakfast dish is possible with their kitchen, do not stretch: leave breakfast out, set possible=false, and name the ingredient that unlocks breakfast (e.g. Poha, Sooji, Besan, Bread, Eggs). Set eat_with to "On its own" unless the dish itself is naturally served on bread or toast.
+- LUNCH is a fuller, complete Indian lunch: a sabzi and/or dal served with roti or rice (for example "Aloo Gobhi with Roti", "Dal Tadka with Rice", "Bhindi with Roti and Dal"), or a classic one-plate lunch such as rajma chawal, chole rice, kadhi chawal, khichdi, pulao with raita, or curd rice with a sabzi. Put the base (Roti, Rice, Paratha) in "eat_with" and in the dish name. The base must come from their kitchen: roti or paratha need atta, rice needs rice. Add the base's ingredient (Atta or Rice) to "uses". If they have no atta and no rice, choose the most filling complete dish possible and set eat_with to "On its own".
 - For each meal, give 3 different candidate dishes that all follow these rules.
-- "uses" lists only ingredients from the user's list (not staples), spelled exactly as the user's list spells them.`;
+- "uses" lists only ingredients from the user's list (not staples): the NAME only, spelled exactly as listed, never the quantity (write "Paneer", not "Paneer — 200 g").`;
 
 const SCHEMA = {
   type: 'OBJECT',
@@ -80,7 +81,7 @@ const SCHEMA = {
 };
 
 function buildUserPrompt({ ingredients, staples, slot, diet, avoid }) {
-  const list = ingredients.map(i => `- ${i.name}${i.quantity != null ? ` (${i.quantity} ${i.unit})` : ''}`).join('\n');
+  const list = ingredients.map(i => `- ${i.name}${i.quantity != null ? ` — ${i.quantity} ${i.unit}` : ''}`).join('\n');
   const slots = slot === 'both' ? 'one breakfast and one lunch' : `one ${slot}`;
   return `My kitchen has exactly:\n${list}\n\nStaples I always have: ${(staples || []).join(', ') || 'none'}.\nFood preference: ${diet}.\nRecently suggested (do not repeat): ${(avoid || []).join(', ') || 'none'}.\n\nSuggest ${slots}.`;
 }
@@ -91,6 +92,8 @@ function buildUserPrompt({ ingredients, staples, slot, diet, avoid }) {
 const GENERIC = new Set(['toast', 'wrap', 'bun', 'cream', 'cereal', 'oil', 'cooking oil', 'refined oil', 'corn', 'cheese slice', 'sev', 'namkeen', 'water', 'paani', 'pani', 'salt', 'namak', 'egg', 'beans', 'peas', 'achar', 'chutney']);
 const DERIVED = { roti: ['atta', 'multigrain atta'], buttermilk: ['curd'] };   // made at home from something they have
 const norm = s => String(s).toLowerCase().trim();
+// "Paneer (200 g)" or "Paneer — 200 g" -> "Paneer": a formatting slip is not a hallucination.
+const cleanUse = u => String(u == null ? '' : u).replace(/\s*\(.*?\)\s*/g, ' ').replace(/\s+[—–-]\s*\d.*$/, '').replace(/\s+/g, ' ').trim();
 const termsOf = item => [item.name, ...item.aliases].map(norm).filter(t => t.length >= 4 && !GENERIC.has(t));
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -106,7 +109,8 @@ function groundCheck(result, ingredients, staples = []) {
   const dropped = [];
   for (const meal of result.meals || []) {
     meal.candidates = (meal.candidates || []).filter(c => {
-      const missingUses = (c.uses || []).filter(u => !owned.has(norm(u)));
+      c.uses = (c.uses || []).map(cleanUse);
+      const missingUses = c.uses.filter(u => !owned.has(norm(u)));
       if (missingUses.length) { dropped.push({ slot: meal.slot, dish: c.dish, check: 'uses', missing: missingUses }); return false; }
       const why = norm(c.why || '');
       const mentioned = DIRECTORY.filter(item => !allowed(item) && termsOf(item).some(t => new RegExp(`\\b${escRe(t)}\\b`).test(why)));
